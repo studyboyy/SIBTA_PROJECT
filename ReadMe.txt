@@ -1,7 +1,7 @@
 📌 **README – Sistem Informasi Bimbingan Tugas Akhir**
 ---
 
-## 📖 Deskripsi
+## 📖 Deskription
 
 Aplikasi ini merupakan Sistem Informasi Bimbingan Tugas Akhir berbasis Laravel & Livewire yang digunakan untuk membantu proses bimbingan antara mahasiswa dan dosen secara terstruktur.
 
