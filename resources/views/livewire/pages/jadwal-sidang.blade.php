@@ -1,0 +1,427 @@
+<div class="mx-auto max-w-7xl space-y-6 p-6">
+    <div class="rounded-3xl bg-linear-to-r from-slate-900 via-blue-900 to-cyan-800 px-6 py-8 text-white shadow-lg">
+        <h1 class="text-2xl font-bold sm:text-3xl">Jadwal Sidang & Penentuan Penguji</h1>
+        <p class="mt-2 max-w-3xl text-sm text-blue-100 sm:text-base">
+            Buat jadwal sidang lalu approve pengajuan mahasiswa agar otomatis masuk ke jadwal yang tersedia.
+        </p>
+    </div>
+
+    @if (session('success'))
+        <div class="rounded-lg bg-green-100 px-4 py-3 text-sm font-medium text-green-700">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- FORM JADWAL SIDANG --}}
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-1">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-900">
+                            {{ $editId ? 'Edit Jadwal Sidang' : 'Buat Jadwal Sidang' }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">Atur tanggal, ruangan, kuota, dan dosen penguji.</p>
+                    </div>
+                    <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                        Saran gel. {{ $nextWave }}
+                    </span>
+                </div>
+
+                <form wire:submit.prevent="simpan" class="mt-5 space-y-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Gelombang</label>
+                        <input type="number" min="1" wire:model="gelombang"
+                            placeholder="Kosongkan untuk otomatis"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        @error('gelombang')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Kuota Mahasiswa</label>
+                        <input type="number" min="1" wire:model="kuotaPerGelombang"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        @error('kuotaPerGelombang')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Tanggal</label>
+                        <input type="date" wire:model="tanggal"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        @error('tanggal')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Jam Mulai</label>
+                            <input type="time" wire:model="jam_mulai"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            @error('jam_mulai')
+                                <x-ui.validation-error :message="$message" />
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">Jam Selesai</label>
+                            <input type="time" wire:model="jam_selesai"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            @error('jam_selesai')
+                                <x-ui.validation-error :message="$message" />
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Ruangan</label>
+                        <input type="text" wire:model="ruangan" placeholder="Contoh: Ruang Sidang 1"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        @error('ruangan')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Program Studi</label>
+                        <select wire:model.live="prodi_id"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            <option value="">-- Pilih Program Studi --</option>
+                            @foreach ($prodiOptions as $prodi)
+                                <option value="{{ $prodi->id }}">{{ $prodi->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('prodi_id')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Ketua Sidang</label>
+                        <select wire:model="ketua_sidang_id"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            <option value="">-- Pilih Ketua Sidang --</option>
+                            @foreach ($dosens as $dsn)
+                                <option value="{{ $dsn->id }}">{{ $dsn->user->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('ketua_sidang_id')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Penguji 1</label>
+                        <select wire:model="penguji_1_id"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            <option value="">-- Pilih Penguji 1 --</option>
+                            @foreach ($dosens as $dsn)
+                                <option value="{{ $dsn->id }}">{{ $dsn->user->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('penguji_1_id')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Penguji 2</label>
+                        <select wire:model="penguji_2_id"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            <option value="">-- Pilih Penguji 2 --</option>
+                            @foreach ($dosens as $dsn)
+                                <option value="{{ $dsn->id }}">{{ $dsn->user->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('penguji_2_id')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
+
+                    <button type="submit" wire:loading.attr="disabled"
+                        class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                        <span wire:loading.remove
+                            wire:target="simpan">{{ $editId ? 'Update Jadwal' : 'Simpan Jadwal' }}</span>
+                        <span wire:loading wire:target="simpan">Menyimpan...</span>
+                    </button>
+
+                    @if ($editId)
+                        <button type="button" wire:click="batalEdit"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                            Batal Edit
+                        </button>
+                    @endif
+                </form>
+            </div>
+        </div>
+
+        {{-- DAFTAR BATCH JADWAL --}}
+        <div class="lg:col-span-2">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-base font-semibold text-slate-900">Daftar Batch Jadwal</h2>
+                <p class="mt-1 text-sm text-slate-500">Setiap batch menampung mahasiswa sesuai kuota. Mahasiswa yang
+                    diapprove otomatis masuk ke batch dengan kuota tersedia.</p>
+
+                @if ($batches->isEmpty())
+                    <p class="py-10 text-center text-sm text-slate-500">Belum ada batch jadwal.</p>
+                @else
+                    <div class="mt-4 space-y-3">
+                        @foreach ($batches as $batch)
+                            <div class="rounded-2xl border border-slate-200 p-4">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="font-semibold text-slate-900">Gelombang {{ $batch->gelombang }}
+                                            &mdash; {{ $batch->ruangan }}</p>
+                                        <p class="text-sm text-slate-500">
+                                            {{ \Carbon\Carbon::parse($batch->tanggal)->translatedFormat('d M Y') }}
+                                            &bull;
+                                            {{ substr($batch->jam_mulai, 0, 5) }}&ndash;{{ substr($batch->jam_selesai, 0, 5) }}
+                                        </p>
+                                        <p class="text-xs text-slate-500">Prodi:
+                                            {{ $batch->programStudi?->name ?? '-' }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="rounded-full {{ $batch->sidangs_count >= $batch->kuota ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }} px-3 py-1 text-xs font-semibold">
+                                            {{ $batch->sidangs_count }}/{{ $batch->kuota }} terisi
+                                        </span>
+                                        <button wire:click="edit({{ $batch->id }})"
+                                            class="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-600">Edit</button>
+                                        <button wire:click="hapusBatch({{ $batch->id }})"
+                                            wire:confirm="Hapus batch gelombang {{ $batch->gelombang }}?"
+                                            class="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600">Hapus</button>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+                                    <span class="rounded-full bg-blue-50 px-2.5 py-1">Ketua:
+                                        {{ $batch->ketuaSidang?->user?->name ?? '-' }}</span>
+                                    <span class="rounded-full bg-purple-50 px-2.5 py-1">Penguji 1:
+                                        {{ $batch->penguji1?->user?->name ?? '-' }}</span>
+                                    <span class="rounded-full bg-emerald-50 px-2.5 py-1">Penguji 2:
+                                        {{ $batch->penguji2?->user?->name ?? '-' }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- APPROVAL PENGAJUAN SIDANG --}}
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900">Approval Pengajuan Sidang</h2>
+                <p class="mt-1 text-sm text-slate-500">Approve pengajuan dan mahasiswa otomatis masuk ke jadwal batch
+                    yang tersedia.</p>
+            </div>
+            <div class="w-full md:w-56">
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Filter
+                    Status</label>
+                <select wire:model.live="pengajuanStatus"
+                    class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    <option value="">Semua</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mt-5 space-y-4">
+            @forelse ($pengajuanSidangs as $pengajuan)
+                @php
+                    $isApproved = ($pengajuan->status ?? 'pending') === 'approved';
+                    $isRejected = ($pengajuan->status ?? 'pending') === 'rejected';
+                    $isProcessed = $isApproved || $isRejected;
+                @endphp
+                <article class="rounded-2xl border border-slate-200 p-4">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <p class="font-semibold text-slate-900">
+                                {{ $pengajuan->mahasiswa?->user?->name ?? 'Mahasiswa' }}</p>
+                            <p class="text-sm text-slate-500">{{ $pengajuan->mahasiswa?->nim ?? '-' }} &bull; diajukan
+                                {{ $pengajuan->diajukan_pada?->translatedFormat('d M Y H:i') ?? '-' }}</p>
+                            <p class="text-xs text-slate-400">Prodi:
+                                {{ $pengajuan->mahasiswa?->programStudi?->name ?? ($pengajuan->mahasiswa?->prodi ?? '-') }}
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                            <span
+                                class="rounded-full px-3 py-1 {{ ($pengajuan->status_dosen ?? 'pending') === 'approved' ? 'bg-emerald-100 text-emerald-700' : (($pengajuan->status_dosen ?? 'pending') === 'rejected' ? 'bg-red-100 text-red-700' : (($pengajuan->status_dosen ?? 'pending') === 'revisi' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700')) }}">
+                                Dosen: {{ ucfirst($pengajuan->status_dosen ?? 'pending') }}
+                            </span>
+                            <span
+                                class="rounded-full px-3 py-1 {{ ($pengajuan->status_kaprodi ?? 'pending') === 'approved' ? 'bg-cyan-100 text-cyan-700' : (($pengajuan->status_kaprodi ?? 'pending') === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700') }}">
+                                Kaprodi: {{ ucfirst($pengajuan->status_kaprodi ?? 'pending') }}
+                            </span>
+                            <span
+                                class="rounded-full px-3 py-1 {{ $isApproved ? 'bg-emerald-100 text-emerald-700' : ($isRejected ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700') }}">
+                                Admin: {{ ucfirst($pengajuan->status ?? 'pending') }}
+                            </span>
+                            @if ($pengajuan->gelombang)
+                                <span class="rounded-full bg-blue-100 px-3 py-1 text-blue-700">
+                                    Gelombang {{ $pengajuan->gelombang }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if ($pengajuan->catatan_mahasiswa)
+                        <div class="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                            <span class="font-semibold text-slate-900">Catatan mahasiswa:</span>
+                            {{ $pengajuan->catatan_mahasiswa }}
+                        </div>
+                    @endif
+
+                    @if ($pengajuan->mahasiswa?->programStudi?->name)
+                        <div class="mt-3 rounded-xl bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+                            <span class="font-semibold text-cyan-900">Program studi:</span>
+                            {{ $pengajuan->mahasiswa->programStudi->name }}
+                        </div>
+                    @endif
+
+                    @if ($pengajuan->catatan_kaprodi)
+                        <div class="mt-3 rounded-xl bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+                            <span class="font-semibold text-cyan-900">Catatan kaprodi:</span>
+                            {{ $pengajuan->catatan_kaprodi }}
+                        </div>
+                    @endif
+
+                    @if ($isApproved)
+                        <div class="mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                            Pengajuan sudah disetujui dan dijadwalkan ke gelombang
+                            {{ $pengajuan->gelombang ?? '-' }}.
+                        </div>
+                    @elseif ($isRejected)
+                        <div class="mt-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                            Pengajuan telah ditolak.
+                        </div>
+                    @elseif (($pengajuan->status_kaprodi ?? 'pending') !== 'approved')
+                        <div class="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                            Menunggu approval kaprodi. Admin belum bisa menjadwalkan sidang sebelum tahap ini disetujui.
+                        </div>
+                    @else
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button wire:click="approvePengajuan({{ $pengajuan->id }})"
+                                wire:confirm="Setujui pengajuan ini? Mahasiswa akan otomatis dijadwalkan ke batch tersedia."
+                                class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">
+                                Approve & Jadwalkan
+                            </button>
+                            <button wire:click="rejectPengajuan({{ $pengajuan->id }})"
+                                wire:confirm="Tolak pengajuan ini?"
+                                class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700">
+                                Reject
+                            </button>
+                        </div>
+                    @endif
+                </article>
+            @empty
+                <div
+                    class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                    Belum ada pengajuan sidang mahasiswa.
+                </div>
+            @endforelse
+        </div>
+
+        <div class="mt-4">
+            <x-ui.show-entries wire:model.live="pengajuanPerPage" class="focus:border-blue-500 focus:ring-blue-500" />
+        </div>
+
+        <div class="mt-3">
+            {{ $pengajuanSidangs->links('vendor.pagination.tailwind') }}
+        </div>
+    </section>
+
+    {{-- DAFTAR SIDANG MAHASISWA --}}
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-base font-semibold text-slate-900">Daftar Sidang Mahasiswa</h2>
+                <p class="mt-1 text-sm text-slate-500">Mahasiswa yang sudah terjadwal sidang beserta susunan penguji.
+                </p>
+            </div>
+            <input type="text" wire:model.live.debounce.400ms="search"
+                placeholder="Cari mahasiswa, NIM, ruangan..."
+                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 sm:w-80" />
+        </div>
+
+        @if ($sidangs->isEmpty())
+            <p class="py-10 text-center text-sm text-slate-500">Belum ada data sidang mahasiswa.</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="min-w-full border-collapse text-sm">
+                    <thead>
+                        <tr
+                            class="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                            <th class="px-4 py-3">Mahasiswa</th>
+                            <th class="px-4 py-3">Gelombang</th>
+                            <th class="px-4 py-3">Tanggal</th>
+                            <th class="px-4 py-3">Jam</th>
+                            <th class="px-4 py-3">Ruangan</th>
+                            <th class="px-4 py-3">List Penguji</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach ($sidangs as $sidang)
+                            <tr wire:key="jadwal-sidang-{{ $sidang->id }}" class="hover:bg-slate-50">
+                                <td class="px-4 py-3 font-medium text-slate-800">
+                                    {{ $sidang->mahasiswa?->user?->name ?? '-' }}</td>
+                                <td class="px-4 py-3 text-slate-600">{{ $sidang->gelombang ?? '-' }}</td>
+                                <td class="px-4 py-3 text-slate-600">
+                                    {{ $sidang->jadwal ? \Carbon\Carbon::parse($sidang->jadwal)->format('d M Y') : '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">
+                                    {{ $sidang->jam_mulai && $sidang->jam_selesai ? substr($sidang->jam_mulai, 0, 5) . ' - ' . substr($sidang->jam_selesai, 0, 5) : '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">{{ $sidang->ruangan ?? '-' }}</td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-2">
+                                        <span
+                                            class="inline-flex rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                            Ketua: {{ $sidang->ketuaSidang?->user?->name ?? '-' }}
+                                        </span>
+                                        <span
+                                            class="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
+                                            Penguji 1: {{ $sidang->penguji1?->user?->name ?? '-' }}
+                                        </span>
+                                        <span
+                                            class="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                                            Penguji 2: {{ $sidang->penguji2?->user?->name ?? '-' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <button wire:click="hapusSidang({{ $sidang->id }})"
+                                        wire:confirm="Hapus jadwal sidang {{ $sidang->mahasiswa?->user?->name ?? '' }}?"
+                                        class="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <x-ui.show-entries wire:model.live="sidangPerPage"
+                    class="focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div class="mt-3">
+                {{ $sidangs->links('vendor.pagination.tailwind') }}
+            </div>
+        @endif
+    </section>
+</div>
