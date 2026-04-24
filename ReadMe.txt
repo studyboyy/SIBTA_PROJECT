@@ -1,4 +1,4 @@
-📌 **README – Sistem Informasi Bimbingan Tugas Akhir**
+📌 **README –
 ---
 
 ## 📖 Deskription
