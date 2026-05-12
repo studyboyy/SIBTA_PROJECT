@@ -73,6 +73,7 @@
                         @enderror
                     </div>
 
+                    {{-- Jam --}}
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Jam Bimbingan</label>
                         <input type="time" wire:model="jam"
@@ -82,255 +83,258 @@
                         @enderror
                     </div>
 
+                    {{-- Mode --}}
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Mode Bimbingan</label>
-                        <select wire:model.live="mode"
+                        <select wire:model="mode"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100">
-                            <option value="offline">Offline</option>
-                            <option value="online">Online</option>
+                            <option value="offline">Offline (Tatap Muka)</option>
+                            <option value="online">Online (Sinkron)</option>
                         </select>
                         @error('mode')
                             <x-ui.validation-error :message="$message" />
                         @enderror
                     </div>
 
-                    @if ($mode === 'offline')
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Lokasi</label>
-                            <input type="text" wire:model="lokasi" placeholder="Contoh: Ruang Dosen 2"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-                            @error('lokasi')
-                                <x-ui.validation-error :message="$message" />
-                            @enderror
-                        </div>
-                    @else
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Link Meeting</label>
-                            <input type="url" wire:model="link_online" placeholder="https://..."
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-                            @error('link_online')
-                                <x-ui.validation-error :message="$message" />
-                            @enderror
-                        </div>
-                    @endif
+                    {{-- Lokasi / Link --}}
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">
+                            {{ ($mode ?? 'offline') === 'online' ? 'Link Meeting' : 'Lokasi Bimbingan' }}
+                        </label>
+                        <input type="text" wire:model="lokasi"
+                            placeholder="{{ ($mode ?? 'offline') === 'online' ? 'https://zoom.us/j/123...' : 'Ruang E2.11' }}"
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                        @error('lokasi')
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+                    </div>
 
                     {{-- Catatan --}}
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Agenda / Catatan Sesi</label>
-                        <textarea wire:model="catatan" rows="4"
-                            placeholder="Tuliskan agenda bimbingan atau catatan yang perlu disiapkan..."
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 resize-none"></textarea>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Agenda / Catatan</label>
+                        <textarea wire:model="catatan" rows="3" placeholder="Topik yang akan dibahas pada sesi ini..."
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"></textarea>
                         @error('catatan')
                             <x-ui.validation-error :message="$message" />
                         @enderror
                     </div>
 
-                    {{-- Actions --}}
-                    <div class="flex gap-2 pt-1">
-                        <button wire:click="simpan" wire:loading.attr="disabled"
-                            class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
-                            <span wire:loading.remove wire:target="simpan">
-                                {{ $editId ? 'Simpan Perubahan' : 'Buat Jadwal ke Semua Mahasiswa' }}
-                            </span>
-                            <span wire:loading wire:target="simpan">Menyimpan...</span>
+                    {{-- Submit Button --}}
+                    <button wire:click="simpan" wire:loading.attr="disabled"
+                        class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+                        <span wire:loading.remove>{{ $editId ? 'Perbarui Jadwal' : 'Buat Jadwal' }}</span>
+                        <span wire:loading>Memproses...</span>
+                    </button>
+
+                    @if ($editId)
+                        <button wire:click="batal"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-semibold text-slate-600 hover:bg-slate-50">
+                            Batal
                         </button>
-                        @if ($editId)
-                            <button wire:click="resetForm" type="button"
-                                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                                Batal
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
+                    @endif
 
-            {{-- Mini stats --}}
-            <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Total Mahasiswa Bimbingan</p>
-                <p class="mt-1 text-3xl font-semibold text-slate-900">{{ $mahasiswas->count() }}</p>
-                <p class="mt-3 text-sm text-slate-500">Total Jadwal Bimbingan</p>
-                <p class="mt-1 text-3xl font-semibold text-slate-900">{{ $logs->total() }}</p>
-            </div>
-
-            <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-slate-900">Progress Kehadiran Mahasiswa</h3>
-                <div class="mt-3 space-y-3">
-                    @forelse ($progressByMahasiswa as $item)
-                        <div class="rounded-xl border border-slate-200 px-3 py-2">
-                            <p class="text-sm font-semibold text-slate-800">{{ $item['name'] }}</p>
-                            <p class="text-xs text-slate-500">{{ $item['nim'] }} •
-                                {{ $item['hadir'] }}/{{ $item['total'] }} hadir</p>
-                            <div class="mt-2 h-2 rounded-full bg-slate-100">
-                                <div class="h-2 rounded-full bg-indigo-500"
-                                    style="width: {{ max($item['progress'], 5) }}%"></div>
+                    <div class="border-t border-slate-200 pt-4">
+                        <p class="mb-2 text-xs font-semibold text-slate-700 uppercase">Stats</p>
+                        <div class="space-y-1">
+                            @php
+                                $countAll = $logs->count();
+                                $countSelesai = $logs->where('status_sesi', 'selesai')->count();
+                            @endphp
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-slate-500">Total Jadwal:</span>
+                                <span class="font-semibold text-slate-900">{{ $countAll ?? 0 }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-slate-500">Selesai:</span>
+                                <span class="font-semibold text-emerald-600">{{ $countSelesai ?? 0 }}</span>
                             </div>
                         </div>
-                    @empty
-                        <p class="text-sm text-slate-500">Belum ada data progress.</p>
-                    @endforelse
+                    </div>
                 </div>
             </div>
         </aside>
 
-        {{-- DAFTAR LOG --}}
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 class="text-base font-semibold text-slate-900">Daftar Penjadwalan</h2>
-                <div class="flex flex-col gap-2 sm:flex-row">
-                    <input type="text" wire:model.live.debounce.300ms="search"
-                        placeholder="Cari agenda / nama / NIM..."
-                        class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 w-full sm:w-56" />
-                    <select wire:model.live="filterMahasiswa"
-                        class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 w-full sm:w-48">
-                        <option value="">Semua Mahasiswa</option>
-                        @foreach ($mahasiswas as $mhs)
-                            <option value="{{ $mhs->id }}">{{ $mhs->user->name }}</option>
-                        @endforeach
-                    </select>
-                    <select wire:model.live="filterStatusSesi"
-                        class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 w-full sm:w-44">
-                        <option value="">Semua Status Sesi</option>
-                        <option value="diajukan">Diajukan</option>
-                        <option value="disetujui">Disetujui</option>
-                        <option value="selesai">Selesai</option>
-                        <option value="dibatalkan">Dibatalkan</option>
-                    </select>
-                </div>
-            </div>
+        {{-- LOGS LISTING --}}
+        <section class="space-y-4">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-4 text-base font-semibold text-slate-900">Jadwal Bimbingan</h2>
 
-            <div class="space-y-3">
-                @forelse ($logs as $log)
+                <div class="space-y-3">
                     @php
-                        $isSelesai = ($log->status_sesi ?? 'diajukan') === 'selesai';
+                        $rendered = [];
+                        $collection = $logs->getCollection();
                     @endphp
-                    <div wire:key="log-{{ $log->id }}"
-                        class="rounded-2xl border border-slate-200 p-4 transition hover:border-slate-300 {{ $editId === $log->id ? 'border-indigo-300 bg-indigo-50/40' : '' }}">
-                        @if ($isSelesai)
-                            <details>
-                                <summary class="cursor-pointer list-none">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="font-semibold text-slate-900">
-                                                {{ $log->mahasiswa?->user?->name ?? '-' }}
-                                            </p>
-                                            <p class="text-xs text-slate-500">
-                                                {{ $log->mahasiswa?->nim ?? '-' }} •
-                                                {{ \Carbon\Carbon::parse($log->tanggal)->translatedFormat('d M Y') }}
-                                                {{ $log->jam ? ' • ' . \Carbon\Carbon::parse($log->jam)->format('H:i') : '' }}
-                                            </p>
-                                        </div>
-                                        <span
-                                            class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700">
-                                            Sesi Selesai • Klik Detail
-                                        </span>
-                                    </div>
-                                </summary>
-                                <div class="mt-3 space-y-3 border-t border-slate-200 pt-3">
-                                @else
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="font-semibold text-slate-900">
-                                                {{ $log->mahasiswa?->user?->name ?? '-' }}
-                                            </p>
-                                            <p class="text-xs text-slate-500">
-                                                {{ $log->mahasiswa?->nim ?? '-' }} •
-                                                {{ \Carbon\Carbon::parse($log->tanggal)->translatedFormat('d M Y') }}
-                                                {{ $log->jam ? ' • ' . \Carbon\Carbon::parse($log->jam)->format('H:i') : '' }}
-                                            </p>
-                                        </div>
-                                        <span
-                                            class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700">
-                                            Penjadwalan Aktif
-                                        </span>
-                                    </div>
+
+                    @forelse ($collection as $log)
+                        @php
+                            $sessionKey = md5(
+                                ($log->tanggal ?? '') .
+                                    '|' .
+                                    ($log->jam ?? '') .
+                                    '|' .
+                                    ($log->mode ?? '') .
+                                    '|' .
+                                    ($log->lokasi ?? ''),
+                            );
+                        @endphp
+
+                        @if (in_array($sessionKey, $rendered, true))
+                            @continue
                         @endif
 
-                        <p class="mt-2 text-sm text-slate-600">
-                            {{ $log->catatan ?: 'Belum ada agenda/catatan.' }}
-                        </p>
-                        <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                            <span
-                                class="rounded-full px-2.5 py-1 {{ ($log->status_sesi ?? 'diajukan') === 'selesai' ? 'bg-emerald-100 text-emerald-700' : (($log->status_sesi ?? 'diajukan') === 'disetujui' ? 'bg-blue-100 text-blue-700' : (($log->status_sesi ?? 'diajukan') === 'dibatalkan' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')) }}">
-                                Status Sesi: {{ ucfirst($log->status_sesi ?? 'diajukan') }}
-                            </span>
-                            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
-                                Mode: {{ ucfirst($log->mode ?? 'offline') }}
-                            </span>
-                            @if (($log->mode ?? 'offline') === 'online' && $log->link_online)
-                                <a href="{{ $log->link_online }}" target="_blank"
-                                    class="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">Link
-                                    Meeting</a>
-                            @elseif (($log->mode ?? 'offline') === 'offline')
-                                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
-                                    Lokasi: {{ $log->lokasi ?: 'Belum ditentukan' }}
-                                </span>
-                            @endif
-                            <span
-                                class="rounded-full px-2.5 py-1 {{ ($log->konfirmasi_mahasiswa ?? 'pending') === 'hadir' ? 'bg-emerald-100 text-emerald-700' : (($log->konfirmasi_mahasiswa ?? 'pending') === 'tidak_hadir' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
-                                Kehadiran Mahasiswa:
-                                {{ ($log->konfirmasi_mahasiswa ?? 'pending') === 'hadir' ? 'Hadir' : (($log->konfirmasi_mahasiswa ?? 'pending') === 'tidak_hadir' ? 'Tidak Hadir' : 'Menunggu') }}
-                            </span>
-                        </div>
-                        <div class="mt-3 flex gap-2">
-                            <button wire:click="edit({{ $log->id }})"
-                                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
-                                Edit
-                            </button>
-                            @if (($log->status_sesi ?? 'diajukan') !== 'selesai')
-                                <button wire:click="ubahStatusSesi({{ $log->id }}, 'selesai')"
-                                    class="rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50">
-                                    Tandai Selesai
-                                </button>
-                            @endif
-                            @if (($log->status_sesi ?? 'diajukan') !== 'dibatalkan')
-                                <button wire:click="ubahStatusSesi({{ $log->id }}, 'dibatalkan')"
-                                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
-                                    Batalkan Sesi
-                                </button>
-                            @endif
-                            <button wire:click="hapus({{ $log->id }})"
-                                wire:confirm="Hapus jadwal bimbingan ini?"
-                                class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
-                                Hapus
-                            </button>
-                        </div>
+                        @php
+                            $rendered[] = $sessionKey;
+                            $sessionItems = $collection
+                                ->where('tanggal', $log->tanggal)
+                                ->where('jam', $log->jam)
+                                ->where('mode', $log->mode)
+                                ->where('lokasi', $log->lokasi);
+                            $first = $sessionItems->first();
+                            $isSelesai = ($first->status_sesi ?? 'diajukan') === 'selesai';
+                        @endphp
 
-                        <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                            <p class="text-xs font-semibold text-slate-700">Audit Status Sesi</p>
-                            <div class="mt-2 space-y-1.5">
-                                @forelse ($log->sessionAudits->take(3) as $audit)
-                                    <p class="text-[11px] text-slate-600">
-                                        {{ $audit->changed_at?->translatedFormat('d M Y H:i') ?? '-' }} •
-                                        {{ $audit->from_status_sesi ? ucfirst($audit->from_status_sesi) : '-' }}
-                                        -> {{ ucfirst($audit->to_status_sesi) }}
-                                        ({{ $audit->source }})
-                                        oleh {{ $audit->changedByUser?->name ?? 'Sistem' }}
+                        <div class="rounded-2xl border border-slate-200 p-4 hover:border-slate-300 transition">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="font-semibold text-slate-900">
+                                        Sesi: {{ \Carbon\Carbon::parse($first->tanggal)->translatedFormat('d M Y') }}
+                                        {{ $first->jam ? ' • ' . \Carbon\Carbon::parse($first->jam)->format('H:i') : '' }}
+                                        - {{ ucfirst($first->mode ?? 'offline') }}
                                     </p>
-                                @empty
-                                    <p class="text-[11px] text-slate-500">Belum ada riwayat perubahan status sesi.</p>
-                                @endforelse
+                                    <p class="text-xs text-slate-500">
+                                        Lokasi: {{ $first->lokasi ?: '—' }} • Peserta: {{ $sessionItems->count() }}
+                                        mahasiswa
+                                    </p>
+                                </div>
+                                <span
+                                    class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $isSelesai ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }}">
+                                    {{ $isSelesai ? 'Selesai' : 'Aktif' }}
+                                </span>
+                            </div>
+
+                            <p class="mt-2 text-sm text-slate-600">
+                                {{ $first->catatan ?: 'Belum ada agenda/catatan.' }}
+                            </p>
+
+                            <div class="mt-3 flex gap-2 flex-wrap">
+                                <button
+                                    wire:click="editSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}', {{ $first->id }})"
+                                    class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                                    Edit Sesi
+                                </button>
+                                @if (($first->status_sesi ?? 'diajukan') !== 'selesai')
+                                    <button
+                                        wire:click="ubahStatusSesiSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}','selesai')"
+                                        class="rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50">
+                                        Tandai Selesai
+                                    </button>
+                                @endif
+                                @if (($first->status_sesi ?? 'diajukan') !== 'dibatalkan')
+                                    <button
+                                        wire:click="ubahStatusSesiSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}','dibatalkan')"
+                                        class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
+                                        Batalkan Sesi
+                                    </button>
+                                @endif
+                                <button
+                                    wire:click="hapusSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}')"
+                                    wire:confirm="Hapus semua jadwal pada sesi ini?"
+                                    class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
+                                    Hapus Sesi
+                                </button>
+                            </div>
+
+                            {{-- List Mahasiswa dalam Session --}}
+                            <div class="mt-3 space-y-2">
+                                @foreach ($sessionItems as $slog)
+                                    <div class="rounded-lg border border-slate-100 px-3 py-2">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-semibold text-slate-800">
+                                                    {{ $slog->mahasiswa?->user?->name ?? 'Mahasiswa' }}
+                                                </p>
+                                                <p class="text-xs text-slate-500">
+                                                    {{ $slog->mahasiswa?->nim ?? '-' }} • Kehadiran:
+                                                    {{ $slog->konfirmasi_mahasiswa ?? 'pending' }}
+                                                </p>
+                                            </div>
+                                            <div class="text-xs text-slate-500">
+                                                {{ $slog->created_at?->translatedFormat('d M Y H:i') }}
+                                            </div>
+                                        </div>
+
+                                        {{-- Catatan Revisi per Mahasiswa --}}
+                                        <div class="mt-2 border-t border-slate-100 pt-2">
+                                            <textarea wire:model="catatanRevisi.{{ $slog->id }}" rows="2"
+                                                placeholder="Tulis catatan revisi untuk mahasiswa ini..."
+                                                class="w-full rounded-lg border border-amber-200 bg-white px-2 py-1.5 text-xs text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-100"></textarea>
+                                            <div class="mt-1 flex gap-2">
+                                                <button wire:click="kirimCatatanRevisi({{ $slog->id }})"
+                                                    wire:loading.attr="disabled"
+                                                    class="rounded-lg bg-amber-600 px-2 py-1 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-60">
+                                                    <span wire:loading.remove
+                                                        wire:target="kirimCatatanRevisi({{ $slog->id }})">Kirim
+                                                        Catatan</span>
+                                                    <span wire:loading
+                                                        wire:target="kirimCatatanRevisi({{ $slog->id }})">Mengirim...</span>
+                                                </button>
+                                            </div>
+
+                                            {{-- Display Sent Messages --}}
+                                            @if ($slog->bimbinganMessages && $slog->bimbinganMessages->where('sender_role', 'dosen')->isNotEmpty())
+                                                <div class="mt-1.5 space-y-1">
+                                                    @foreach ($slog->bimbinganMessages->where('sender_role', 'dosen')->take(2) as $message)
+                                                        <div
+                                                            class="rounded-lg border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-slate-700">
+                                                            <p class="font-semibold text-amber-800">✓
+                                                                {{ $message->created_at?->translatedFormat('d M H:i') }}
+                                                            </p>
+                                                            <p class="mt-0.5 whitespace-pre-line text-[11px]">
+                                                                {{ $message->message }}</p>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Audit Section --}}
+                            <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                <p class="text-xs font-semibold text-slate-700">Audit Status Sesi</p>
+                                <div class="mt-2 space-y-1.5">
+                                    @forelse ($first->sessionAudits->take(3) as $audit)
+                                        <p class="text-[11px] text-slate-600">
+                                            {{ $audit->changed_at?->translatedFormat('d M Y H:i') ?? '-' }} •
+                                            {{ $audit->from_status_sesi ? ucfirst($audit->from_status_sesi) : '-' }}
+                                            -> {{ ucfirst($audit->to_status_sesi) }} ({{ $audit->source }})
+                                            oleh {{ $audit->changedByUser?->name ?? 'Sistem' }}
+                                        </p>
+                                    @empty
+                                        <p class="text-[11px] text-slate-500">Belum ada riwayat perubahan status sesi.
+                                        </p>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
-                        @if ($isSelesai)
-                    </div>
-                    </details>
-                @endif
-            </div>
-        @empty
-            <div
-                class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
-                Belum ada penjadwalan bimbingan.
-            </div>
-            @endforelse
-    </div>
+                    @empty
+                        <div
+                            class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                            Belum ada penjadwalan bimbingan.
+                        </div>
+                    @endforelse
+                </div>
 
-    <div class="mt-4">
-        <x-ui.show-entries wire:model.live="perPage" class="focus:border-indigo-500 focus:ring-indigo-500" />
-    </div>
+                <div class="mt-4">
+                    <x-ui.show-entries wire:model.live="perPage"
+                        class="focus:border-indigo-500 focus:ring-indigo-500" />
+                </div>
 
-    <div class="mt-3">
-        {{ $logs->links('vendor.pagination.tailwind') }}
+                <div class="mt-3">
+                    {{ $logs->links('vendor.pagination.tailwind') }}
+                </div>
+            </div>
+        </section>
     </div>
-    </section>
-</div>
 </div>

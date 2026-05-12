@@ -32,7 +32,7 @@
             <section class="p-6 sm:p-10" x-data="{ showPassword: false }">
                 <div class="mx-auto w-full max-w-md">
                     <img class="mx-auto h-16 w-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
-                        src="{{ asset('storage/Logo/unpari.jpg') }}" alt="Logo SIBTA">
+                        src="{{ asset('storage/logo/unpari.jpg') }}" alt="Logo SIBTA">
                     <h2 class="mt-5 text-center text-2xl font-semibold text-slate-900">Masuk ke SIBTA</h2>
                     <p class="mt-1 text-center text-sm text-slate-500">Gunakan akunmu untuk melanjutkan aktivitas.</p>
 

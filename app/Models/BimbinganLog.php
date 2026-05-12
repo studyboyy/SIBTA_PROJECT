@@ -26,4 +26,12 @@ class BimbinganLog extends Model
     {
         return $this->hasMany(BimbinganSessionAudit::class, 'bimbingan_log_id')->orderByDesc('changed_at')->orderByDesc('id');
     }
+
+    public function bimbinganMessages()
+    {
+        // messages for the same mahasiswa; filtering by dosen is handled at query time
+        return $this->hasMany(BimbinganMessage::class, 'mahasiswa_id', 'mahasiswa_id')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+    }
 }

@@ -30,16 +30,42 @@ use App\Livewire\Pages\MahasiswaProgressDetail;
 use App\Livewire\Pages\PengajuanJudulReview;
 use App\Livewire\Pages\PengelolaanDokumen;
 use App\Livewire\Pages\ProdiManagement;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', function (Request $request) {
+    $user = $request->user();
+
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    if ($user->hasRole('admin')) {
+        return redirect()->route('dashboard');
+    }
+
+    if ($user->hasRole('dosen')) {
+        return redirect()->route('dosen.dashboard');
+    }
+
+    if ($user->hasRole('mahasiswa')) {
+        return redirect()->route('mahasiswa.dashboard');
+    }
+
+    if ($user->hasRole('kaprodi') || $user->hasRole('pimpinan')) {
+        return redirect()->route('kaprodi.dashboard');
+    }
+
+    return redirect()->route('login');
+})->name('home');
 
 Route::livewire('/login', Login::class)->name('login')->middleware('guest');
 Route::livewire('/logout', Logout::class)->name('logout');
 Route::view('/forgot-password-info', 'auth.forgot-password-info')->name('forgot-password.info')->middleware('guest');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::livewire('/', Dashboard::class)->name('home');
-    Route::redirect('/dashboard', '/')->name('dashboard');
+    Route::livewire('/dashboard', Dashboard::class)->name('dashboard');
     Route::livewire('/profil-admin', AdminProfile::class)->name('admin.profile');
     Route::livewire('/user-admin', AdminUsers::class)->name('admin.users');
     Route::livewire('/kaprodi', KaprodiManagement::class)->name('admin.kaprodi');

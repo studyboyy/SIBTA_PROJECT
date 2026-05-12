@@ -82,7 +82,7 @@ class MahasiswaBimbingan extends Component
         }
 
         $bimbinganList = BimbinganLog::query()
-            ->with(['dosen.user'])
+            ->with(['dosen.user', 'bimbinganMessages'])
             ->where('mahasiswa_id', $mahasiswa->id)
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
@@ -97,12 +97,12 @@ class MahasiswaBimbingan extends Component
 
         $totalBimbingan = BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswa->id)
-            ->count();
+            ->count('id');
 
         $totalHadir = BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswa->id)
             ->where('konfirmasi_mahasiswa', 'hadir')
-            ->count();
+            ->count('id');
 
         $progressBimbingan = $totalBimbingan > 0
             ? (int) round(($totalHadir / $totalBimbingan) * 100)

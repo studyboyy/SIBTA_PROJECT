@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Middleware\EnsureMahasiswaHasPembimbing;
+use App\Http\Middleware\RedirectIfRoleMismatch;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => RoleMiddleware::class,
+            'role' => RedirectIfRoleMismatch::class,
             'mahasiswa.has.pembimbing' => EnsureMahasiswaHasPembimbing::class,
         ]);
     })

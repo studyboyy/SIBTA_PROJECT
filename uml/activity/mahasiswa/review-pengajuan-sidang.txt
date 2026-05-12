@@ -1,0 +1,9 @@
+DESKRIPSI ACTIVITY DIAGRAM – REVIEW PENGAJUAN SIDANG (SIBTA)
+
+Activity Diagram Review Pengajuan Sidang memodelkan proses peninjauan pengajuan sidang oleh pihak yang berwenang, khususnya Kaprodi, dari saat pengajuan dipilih hingga keputusan disampaikan kepada mahasiswa. Diagram ini menunjukkan bahwa review dilakukan secara terstruktur dengan adanya percabangan keputusan, pembaruan status, dan komunikasi hasil keputusan. Dengan demikian, sistem mendukung tata kelola akademik yang transparan karena setiap pengajuan memiliki status yang jelas dan dapat ditelusuri.
+
+Proses dimulai ketika Kaprodi mengakses menu review pengajuan sidang dan sistem menampilkan daftar pengajuan yang masuk. Kaprodi memilih salah satu pengajuan untuk melihat detail, termasuk identitas mahasiswa, kelengkapan dokumen, serta informasi pendukung yang menjadi dasar keputusan. Setelah memeriksa data, Kaprodi menentukan hasil review. Pada titik ini, diagram memperlihatkan percabangan keputusan yang menghasilkan dua kemungkinan utama, yaitu pengajuan ditolak atau pengajuan disetujui.
+
+Jika pengajuan ditolak, proses pada sistem umumnya menuntut adanya alasan atau catatan penolakan agar mahasiswa memahami perbaikan yang diperlukan. Sistem kemudian menyimpan keputusan beserta catatan tersebut, memperbarui status menjadi “ditolak”, dan mengirim notifikasi kepada mahasiswa. Jika pengajuan disetujui, sistem menyimpan keputusan, memperbarui status menjadi “disetujui” atau “approved”, dan mengirim notifikasi kepada pihak terkait, seperti mahasiswa dan dosen, agar proses berikutnya seperti penjadwalan sidang dapat berjalan.
+
+Dalam konteks skripsi, diagram ini dapat dijelaskan sebagai implementasi proses persetujuan resmi yang menekankan akuntabilitas. Status dan catatan keputusan menjadi bukti formal, sedangkan notifikasi memastikan tidak ada keterlambatan informasi. Struktur ini membantu menjaga konsistensi proses sidang dan meminimalkan miskomunikasi antara mahasiswa dan pihak prodi.

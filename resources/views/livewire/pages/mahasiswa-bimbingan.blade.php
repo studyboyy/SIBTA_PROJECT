@@ -63,6 +63,34 @@
                     </div>
                     <p class="mt-3 text-sm text-slate-600">{{ $bimbingan->catatan ?: 'Belum ada agenda bimbingan.' }}
                     </p>
+
+                    @php
+                        $catatanDosen = $bimbingan->bimbinganMessages
+                            ->where('sender_role', 'dosen')
+                            ->where('dosen_id', $bimbingan->dosen_id)
+                            ->sortByDesc('created_at')
+                            ->first();
+                    @endphp
+
+                    @if ($catatanDosen)
+                        <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-amber-800">Catatan Revisi
+                                    dari Dosen</p>
+                                <p class="text-[11px] text-amber-700">
+                                    {{ $catatanDosen->created_at?->translatedFormat('d M Y H:i') }}
+                                </p>
+                            </div>
+                            <p class="mt-2 whitespace-pre-line text-sm text-amber-900">{{ $catatanDosen->message }}</p>
+                            @if (($bimbingan->bimbinganMessages->where('sender_role', 'dosen')->count() ?? 0) > 1)
+                                <p class="mt-2 text-xs text-amber-700">
+                                    Ada {{ $bimbingan->bimbinganMessages->where('sender_role', 'dosen')->count() }}
+                                    catatan dari dosen untuk sesi ini.
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
                     <div class="mt-2 flex flex-wrap gap-2 text-xs">
                         <span
                             class="rounded-full px-2.5 py-1 {{ ($bimbingan->status_sesi ?? 'diajukan') === 'selesai' ? 'bg-emerald-100 text-emerald-700' : (($bimbingan->status_sesi ?? 'diajukan') === 'disetujui' ? 'bg-blue-100 text-blue-700' : (($bimbingan->status_sesi ?? 'diajukan') === 'dibatalkan' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')) }}">
