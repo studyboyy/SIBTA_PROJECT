@@ -263,6 +263,16 @@
                                             </div>
                                         </div>
 
+                                        @if (!empty($slog->catatan_mahasiswa))
+                                            <div class="mt-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2">
+                                                <p
+                                                    class="text-[11px] font-semibold uppercase tracking-wide text-sky-800">
+                                                    Catatan Hasil Bimbingan dari Mahasiswa</p>
+                                                <p class="mt-1 whitespace-pre-line text-xs text-sky-900">
+                                                    {{ $slog->catatan_mahasiswa }}</p>
+                                            </div>
+                                        @endif
+
                                         {{-- Catatan Revisi per Mahasiswa --}}
                                         <div class="mt-2 border-t border-slate-100 pt-2">
                                             <textarea wire:model="catatanRevisi.{{ $slog->id }}" rows="2"

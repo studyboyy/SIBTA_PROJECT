@@ -91,6 +91,36 @@
                         </div>
                     @endif
 
+                    <div class="mt-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-sky-800">Catatan Hasil
+                                Bimbingan (Mahasiswa)</p>
+                            <p class="text-[11px] text-sky-700">Sesi
+                                {{ $bimbingan->tanggal ? \Carbon\Carbon::parse($bimbingan->tanggal)->translatedFormat('d M Y') : '-' }}{{ $bimbingan->jam ? ' • ' . \Carbon\Carbon::parse($bimbingan->jam)->format('H:i') : '' }}
+                            </p>
+                        </div>
+
+                        <textarea wire:model.defer="catatanMahasiswaDraft.{{ $bimbingan->id }}" rows="3"
+                            placeholder="Tuliskan ringkasan hasil bimbingan untuk sesi ini..."
+                            class="mt-2 block w-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"></textarea>
+                        @error('catatanMahasiswaDraft.' . $bimbingan->id)
+                            <x-ui.validation-error :message="$message" />
+                        @enderror
+
+                        <div class="mt-2 flex items-center justify-between gap-2">
+                            <button wire:click="simpanCatatanHasil({{ $bimbingan->id }})" wire:loading.attr="disabled"
+                                class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60">
+                                <span wire:loading.remove wire:target="simpanCatatanHasil({{ $bimbingan->id }})">Simpan
+                                    Catatan</span>
+                                <span wire:loading
+                                    wire:target="simpanCatatanHasil({{ $bimbingan->id }})">Menyimpan...</span>
+                            </button>
+                            @if (!empty($bimbingan->catatan_mahasiswa))
+                                <span class="text-[11px] text-sky-800">Catatan sudah tersimpan.</span>
+                            @endif
+                        </div>
+                    </div>
+
                     <div class="mt-2 flex flex-wrap gap-2 text-xs">
                         <span
                             class="rounded-full px-2.5 py-1 {{ ($bimbingan->status_sesi ?? 'diajukan') === 'selesai' ? 'bg-emerald-100 text-emerald-700' : (($bimbingan->status_sesi ?? 'diajukan') === 'disetujui' ? 'bg-blue-100 text-blue-700' : (($bimbingan->status_sesi ?? 'diajukan') === 'dibatalkan' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')) }}">

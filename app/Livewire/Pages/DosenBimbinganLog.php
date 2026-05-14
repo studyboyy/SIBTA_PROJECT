@@ -420,6 +420,7 @@ class DosenBimbinganLog extends Component
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
                     $sub->where('catatan', 'like', '%' . $this->search . '%')
+                        ->orWhere('catatan_mahasiswa', 'like', '%' . $this->search . '%')
                         ->orWhereHas('mahasiswa.user', fn($qq) => $qq->where('name', 'like', '%' . $this->search . '%'))
                         ->orWhereHas('mahasiswa', fn($qq) => $qq->where('nim', 'like', '%' . $this->search . '%'));
                 });

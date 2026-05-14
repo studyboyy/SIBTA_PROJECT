@@ -18,6 +18,7 @@ class MahasiswaBimbingan extends Component
     #[Title('Bimbingan Saya')]
     public string $search = '';
     public int $perPage = 10;
+    public array $catatanMahasiswaDraft = [];
 
     public function updatedSearch(): void
     {
@@ -72,6 +73,40 @@ class MahasiswaBimbingan extends Component
         session()->flash('success', 'Konfirmasi kehadiran berhasil diperbarui.');
     }
 
+    public function simpanCatatanHasil(int $logId): void
+    {
+        $mahasiswa = Auth::user()?->mahasiswa;
+        if (! $mahasiswa) {
+            abort(404, 'Data mahasiswa tidak ditemukan untuk akun ini.');
+        }
+
+        $this->validate([
+            'catatanMahasiswaDraft.' . $logId => 'required|string|max:4000',
+        ]);
+
+        $log = BimbinganLog::query()
+            ->whereKey($logId)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->firstOrFail();
+
+        $catatan = trim((string) ($this->catatanMahasiswaDraft[$logId] ?? ''));
+
+        if ($catatan === '') {
+            $this->addError('catatanMahasiswaDraft.' . $logId, 'Catatan hasil bimbingan tidak boleh kosong.');
+
+            return;
+        }
+
+        $log->update([
+            'catatan_mahasiswa' => $catatan,
+        ]);
+
+        $this->catatanMahasiswaDraft[$logId] = $catatan;
+        $this->resetErrorBag('catatanMahasiswaDraft.' . $logId);
+
+        session()->flash('success', 'Catatan hasil bimbingan berhasil disimpan.');
+    }
+
     public function render()
     {
         $user = Auth::user();
@@ -88,12 +123,19 @@ class MahasiswaBimbingan extends Component
                 $query->where(function ($subQuery) {
                     $subQuery
                         ->where('catatan', 'like', '%' . $this->search . '%')
+                        ->orWhere('catatan_mahasiswa', 'like', '%' . $this->search . '%')
                         ->orWhereHas('dosen.user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
                 });
             })
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
             ->paginate($this->perPage);
+
+        foreach ($bimbinganList->items() as $log) {
+            if (! array_key_exists($log->id, $this->catatanMahasiswaDraft)) {
+                $this->catatanMahasiswaDraft[$log->id] = (string) ($log->catatan_mahasiswa ?? '');
+            }
+        }
 
         $totalBimbingan = BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswa->id)

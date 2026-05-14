@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['mahasiswa_id', 'dosen_id', 'tanggal', 'mode', 'jam', 'lokasi', 'link_online', 'catatan', 'status', 'status_sesi', 'konfirmasi_mahasiswa', 'acc_at'])]
+#[Fillable(['mahasiswa_id', 'dosen_id', 'tanggal', 'mode', 'jam', 'lokasi', 'link_online', 'catatan', 'catatan_mahasiswa', 'status', 'status_sesi', 'konfirmasi_mahasiswa', 'acc_at'])]
 class BimbinganLog extends Model
 {
     protected $casts = [
