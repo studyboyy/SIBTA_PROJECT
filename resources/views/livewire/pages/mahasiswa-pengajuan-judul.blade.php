@@ -9,9 +9,10 @@
         class="overflow-hidden rounded-3xl bg-linear-to-r from-slate-900 via-blue-900 to-indigo-800 px-6 py-8 text-white shadow-lg sm:px-8">
         <div class="space-y-3">
             <p class="text-sm font-medium uppercase tracking-[0.3em] text-indigo-100/80">Portal Mahasiswa</p>
-            <h1 class="text-3xl font-semibold sm:text-4xl">Pengajuan Judul</h1>
+            <h1 class="text-3xl font-semibold sm:text-4xl">Pengajuan Judul Skripsi</h1>
             <p class="max-w-2xl text-sm text-indigo-100 sm:text-base">
-                Ajukan judul tugas akhir, pantau status review, dan lihat catatan dari dosen pembimbing Anda.
+                Ajukan judul skripsi dan pilih calon dosen pembimbing yang Anda inginkan. Kaprodi akan meninjau dan
+                menetapkan pembimbing resmi. Setelah ditetapkan, dosen dapat mereview judul Anda.
             </p>
         </div>
     </section>
@@ -19,32 +20,36 @@
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-semibold text-slate-900">Form Pengajuan Baru</h2>
         <p class="mt-1 text-sm text-slate-500">NIM: {{ $mahasiswa->nim }} • {{ $mahasiswa->prodi }}</p>
-        <p class="mt-1 text-sm text-slate-500">
-            Dosen pembimbing:
-            @if ($primaryPembimbingName)
-                <span class="font-semibold text-slate-700">{{ $primaryPembimbingName }}</span>
-            @else
-                <span class="font-semibold text-amber-700">Belum ditentukan</span>
-            @endif
-        </p>
+
+        {{-- Status pembimbing --}}
+        @if ($primaryPembimbingName)
+            <div class="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                <span class="font-semibold">Dosen Pembimbing:</span> {{ $primaryPembimbingName }}
+                — sudah ditetapkan dan dapat mereview judul Anda.
+            </div>
+        @else
+            <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <span class="font-semibold">Dosen pembimbing belum ditetapkan.</span>
+                Ajukan judul dan pilih calon dosen. Kaprodi akan meninjau dan menetapkan pembimbing resmi.
+                Setelah ditetapkan, dosen akan mereview judul Anda.
+            </div>
+        @endif
 
         @if ($approvedTitle)
             <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-800">
-                <p class="font-semibold">Judul sudah disetujui dosen</p>
-                <p class="mt-1">{{ $approvedTitle->judul }}</p>
-                <p class="mt-2 text-xs text-emerald-700">
-                    Form pengajuan baru disembunyikan karena Anda sudah memiliki judul tugas akhir yang disetujui.
+                <p class="font-semibold">Judul skripsi sudah disetujui</p>
+                <p class="mt-1 font-medium text-slate-800">{{ $approvedTitle->judul }}</p>
+                @if ($primaryPembimbingName)
+                    <p class="mt-2 text-xs text-emerald-700">Disetujui oleh: {{ $primaryPembimbingName }}</p>
+                @endif
+                <p class="mt-1 text-xs text-emerald-700">
+                    Form pengajuan baru tidak tersedia karena judul sudah disetujui.
                 </p>
             </div>
         @else
-            <div class="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                Konfirmasi pengajuan judul hanya dapat dilakukan oleh dosen pembimbing yang terkait dengan mahasiswa
-                ini.
-            </div>
-
             <form wire:submit="save" class="mt-5 space-y-4">
                 <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">Judul</label>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Judul Skripsi</label>
                     <input type="text" wire:model="judul"
                         placeholder="Contoh: Sistem Monitoring Bimbingan Berbasis Web"
                         class="block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
@@ -59,6 +64,24 @@
                         placeholder="Tuliskan latar belakang singkat, metode, atau ruang lingkup penelitian"
                         class="block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea>
                     @error('deskripsi')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Calon Dosen Pembimbing
+                        (Opsional)</label>
+                    <p class="mb-2 text-xs text-slate-500">Pilih dosen yang Anda inginkan sebagai pembimbing. Kaprodi
+                        akan memverifikasi apakah dosen tersebut dapat membimbing Anda.</p>
+                    <select wire:model="calon_dosen_pembimbing_id"
+                        class="block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                        <option value="">-- Pilih Calon Dosen Pembimbing --</option>
+                        @foreach ($dosenOptions as $dosen)
+                            <option value="{{ $dosen->id }}">{{ $dosen->user->name }}
+                                ({{ $dosen->nidn }})</option>
+                        @endforeach
+                    </select>
+                    @error('calon_dosen_pembimbing_id')
                         <x-ui.validation-error :message="$message" />
                     @enderror
                 </div>
@@ -125,6 +148,14 @@
 
                     @if ($pengajuan->deskripsi)
                         <p class="mt-3 text-sm text-slate-600">{{ $pengajuan->deskripsi }}</p>
+                    @endif
+
+                    @if ($pengajuan->calonDosenPembimbing)
+                        <div class="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-800">
+                            <span class="font-medium text-indigo-900">Calon Dosen Pembimbing Pilihan:</span>
+                            {{ $pengajuan->calonDosenPembimbing->user->name ?? '-' }}
+                            ({{ $pengajuan->calonDosenPembimbing->nidn }})
+                        </div>
                     @endif
 
                     <div class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">

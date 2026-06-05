@@ -6,34 +6,35 @@ use Illuminate\Support\Collection;
 
 class SidangDocumentCatalog
 {
+    /**
+     * Daftar jenis dokumen yang tersedia untuk diunggah mahasiswa.
+     * Fokus pada dokumen skripsi.
+     */
     public const OPTIONS = [
-        'proposal' => 'Dokumen Proposal',
-        'laporan_ta' => 'Dokumen Laporan TA',
-        'jurnal' => 'Dokumen Jurnal',
-        'bebas_lab' => 'Dokumen Bebas Lab',
-        'bebas_pustaka' => 'Dokumen Bebas Pustaka',
-        'lainnya' => 'Dokumen Lainnya',
+        'proposal'  => 'Dokumen Proposal Skripsi',
+        'skripsi'   => 'Dokumen Skripsi (Laporan Akhir)',
+        'lainnya'   => 'Dokumen Lainnya',
     ];
+
+    /**
+     * Jenis dokumen wajib yang harus disetujui sebelum pengajuan sidang.
+     */
+    public static function requiredTypes(): array
+    {
+        return [
+            'proposal',
+            'skripsi',
+        ];
+    }
 
     public static function options(): array
     {
         return self::OPTIONS;
     }
 
-    public static function requiredTypes(): array
-    {
-        return [
-            'proposal',
-            'laporan_ta',
-            'jurnal',
-            'bebas_lab',
-            'bebas_pustaka',
-        ];
-    }
-
     public static function label(?string $type): string
     {
-        return self::OPTIONS[$type ?? ''] ?? 'Dokumen TA';
+        return self::OPTIONS[$type ?? ''] ?? 'Dokumen Skripsi';
     }
 
     public static function isApprovedStatus(?string $status): bool
@@ -54,15 +55,13 @@ class SidangDocumentCatalog
             return $jenisDokumen === $type;
         }
 
+        // Fallback: cocokkan berdasarkan nama bab (untuk data lama)
         $bab = self::normalize((string) ($document->bab ?? ''));
 
         $keywords = match ($type) {
             'proposal' => ['proposal'],
-            'laporan_ta' => ['laporan ta', 'laporan', 'ta'],
-            'jurnal' => ['jurnal'],
-            'bebas_lab' => ['bebas lab', 'lab'],
-            'bebas_pustaka' => ['bebas pustaka', 'pustaka'],
-            default => [],
+            'skripsi'  => ['skripsi', 'laporan ta', 'laporan akhir', 'laporan', 'ta'],
+            default    => [],
         };
 
         foreach ($keywords as $keyword) {

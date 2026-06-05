@@ -146,11 +146,8 @@ class PengelolaanDokumen extends Component
                 $dokumen = $mhs->dokumenTa;
                 $requiredChecklist = SidangDocumentCatalog::checklist($dokumen);
                 $checklist = [
-                    'Proposal' => $requiredChecklist['proposal'],
-                    'Laporan TA' => $requiredChecklist['laporan_ta'],
-                    'Jurnal' => $requiredChecklist['jurnal'],
-                    'Bebas Lab' => $requiredChecklist['bebas_lab'],
-                    'Bebas Pustaka' => $requiredChecklist['bebas_pustaka'],
+                    'Proposal Skripsi' => $requiredChecklist['proposal'],
+                    'Skripsi (Laporan Akhir)' => $requiredChecklist['skripsi'],
                 ];
 
                 $total = count($checklist);
@@ -207,11 +204,21 @@ class PengelolaanDokumen extends Component
                 $finalDoc = $mhs->dokumenTa
                     ->filter(function ($doc) {
                         $bab = strtolower((string) $doc->bab);
+                        $jenis = strtolower((string) ($doc->jenis_dokumen ?? ''));
 
-                        return str_contains($bab, 'laporan') || str_contains($bab, 'ta') || str_contains($bab, 'jurnal');
+                        // Prioritaskan dokumen skripsi (laporan akhir)
+                        return $jenis === 'skripsi'
+                            || str_contains($bab, 'skripsi')
+                            || str_contains($bab, 'laporan ta')
+                            || str_contains($bab, 'laporan akhir');
                     })
                     ->sortByDesc('updated_at')
-                    ->first();
+                    ->first()
+                    // Fallback ke dokumen proposal jika tidak ada skripsi
+                    ?? $mhs->dokumenTa
+                        ->filter(fn($doc) => strtolower((string) ($doc->jenis_dokumen ?? '')) === 'proposal')
+                        ->sortByDesc('updated_at')
+                        ->first();
 
                 $judul = 'Tugas Akhir: ' . ($finalDoc?->bab ?: 'Dokumen Final') . ' - ' . ($mhs->user->name ?? 'Mahasiswa');
 

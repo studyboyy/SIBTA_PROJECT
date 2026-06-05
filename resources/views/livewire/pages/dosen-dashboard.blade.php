@@ -211,10 +211,10 @@
 
                     <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-600">
                         <span class="rounded-full bg-slate-100 px-2.5 py-1">
-                            Dokumen: {{ $item['approved_dokumen'] }}/{{ $item['total_dokumen'] }} disetujui
+                            Dok. wajib: {{ $item['approved_dokumen'] }}/{{ $item['total_dokumen'] }} disetujui
                         </span>
                         <span class="rounded-full bg-slate-100 px-2.5 py-1">
-                            Hadir: {{ $item['hadir_bimbingan'] }}/{{ $item['target_bimbingan'] }} sesi
+                            Hadir: {{ $item['hadir_bimbingan'] }}/{{ $item['target_bimbingan'] }} sesi target
                         </span>
                         <span class="rounded-full bg-slate-100 px-2.5 py-1">
                             Sidang: {{ ucfirst($item['sidang_status']) }}

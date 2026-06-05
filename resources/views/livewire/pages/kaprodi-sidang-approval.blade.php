@@ -78,13 +78,24 @@
                         <div class="mt-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">Pengajuan sudah
                             diproses admin dan masuk ke gelombang {{ $pengajuan->gelombang ?? '-' }}.</div>
                     @elseif (($pengajuan->status_kaprodi ?? 'pending') === 'pending')
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <button wire:click="confirmAction({{ $pengajuan->id }}, 'approved')"
-                                class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">Approve
-                                Kaprodi</button>
-                            <button wire:click="confirmAction({{ $pengajuan->id }}, 'rejected')"
-                                class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700">Tolak</button>
-                        </div>
+                        {{-- Kaprodi hanya bisa approve jika dosen sudah acc kelayakan --}}
+                        @if (($pengajuan->status_dosen ?? 'pending') !== 'approved')
+                            <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                Menunggu ACC kelayakan dari dosen pembimbing sebelum kaprodi dapat menyetujui.
+                            </div>
+                        @else
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <button wire:click="confirmAction({{ $pengajuan->id }}, 'approved')"
+                                    class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">Approve
+                                    Kaprodi</button>
+                                <button wire:click="confirmAction({{ $pengajuan->id }}, 'rejected')"
+                                    class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700">Tolak</button>
+                            </div>
+                        @endif
+                    @elseif (($pengajuan->status_kaprodi ?? '') === 'rejected')
+                        <div class="mt-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">Pengajuan sudah ditolak kaprodi.</div>
+                    @elseif (($pengajuan->status_kaprodi ?? '') === 'approved')
+                        <div class="mt-3 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-800">Sudah disetujui kaprodi, menunggu proses admin.</div>
                     @endif
                 </article>
             @empty

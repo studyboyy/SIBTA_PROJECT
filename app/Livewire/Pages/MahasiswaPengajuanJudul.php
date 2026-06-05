@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pages;
 
+use App\Models\Dosens;
 use App\Models\Pengajuanjuduls;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
@@ -17,6 +18,7 @@ class MahasiswaPengajuanJudul extends Component
     #[Title('Pengajuan Judul Saya')]
     public string $judul = '';
     public string $deskripsi = '';
+    public string $calon_dosen_pembimbing_id = '';
     public string $search = '';
     public string $status = '';
     public int $perPage = 10;
@@ -47,6 +49,7 @@ class MahasiswaPengajuanJudul extends Component
         $this->validate([
             'judul' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string', 'max:3000'],
+            'calon_dosen_pembimbing_id' => ['nullable', 'exists:dosens,id'],
         ]);
 
         $user = Auth::user();
@@ -67,36 +70,15 @@ class MahasiswaPengajuanJudul extends Component
             return;
         }
 
-        $primaryBimbingan = $mahasiswa->bimbingans()
-            ->with('dosen.user')
-            ->orderBy('id')
-            ->first();
-
-        $primaryPembimbingName = $primaryBimbingan?->dosen?->user?->name;
-
-        if (! $primaryPembimbingName) {
-            $this->addError('judul', 'Pengajuan judul belum bisa dikirim karena dosen pembimbing belum ditentukan.');
-            return;
-        }
-
-        $existingSupervisorConflict = $mahasiswa->bimbingans()
-            ->where('dosen_id', '!=', $primaryBimbingan->dosen_id)
-            ->get()
-            ->isNotEmpty();
-
-        if ($existingSupervisorConflict) {
-            $this->addError('judul', 'Data pembimbing tidak konsisten. Hubungi admin untuk sinkronisasi pembimbing utama.');
-            return;
-        }
-
         Pengajuanjuduls::query()->create([
             'mahasiswa_id' => $mahasiswa->id,
             'judul' => trim($this->judul),
             'deskripsi' => trim($this->deskripsi) ?: null,
+            'calon_dosen_pembimbing_id' => $this->calon_dosen_pembimbing_id !== '' ? (int) $this->calon_dosen_pembimbing_id : null,
             'status' => 'pending',
         ]);
 
-        $this->reset(['judul', 'deskripsi']);
+        $this->reset(['judul', 'deskripsi', 'calon_dosen_pembimbing_id']);
         $this->resetPage();
         $this->dispatch('notify', message: 'Pengajuan judul berhasil dikirim dan menunggu review.');
     }
@@ -181,6 +163,7 @@ class MahasiswaPengajuanJudul extends Component
                         ->orWhere('catatan', 'like', '%' . $this->search . '%');
                 });
             })
+            ->with('calonDosenPembimbing.user')
             ->latest()
             ->paginate($this->perPage);
 
@@ -190,11 +173,17 @@ class MahasiswaPengajuanJudul extends Component
             ->latest('updated_at')
             ->first();
 
+        $dosenOptions = Dosens::query()
+            ->with('user')
+            ->orderBy('nidn')
+            ->get();
+
         return view('livewire.pages.mahasiswa-pengajuan-judul', [
             'mahasiswa' => $mahasiswa,
             'primaryPembimbingName' => $primaryPembimbingName,
             'approvedTitle' => $approvedTitle,
             'pengajuanList' => $pengajuanList,
+            'dosenOptions' => $dosenOptions,
         ]);
     }
 

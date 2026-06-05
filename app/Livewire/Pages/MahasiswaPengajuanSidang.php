@@ -26,14 +26,27 @@ class MahasiswaPengajuanSidang extends Component
             abort(404, 'Data mahasiswa tidak ditemukan untuk akun ini.');
         }
 
-        $checks = $this->buildChecklist($mahasiswa->id);
-
-        if (collect($checks)->contains(false)) {
-            $this->dispatch('notify', message: 'Pengajuan sidang belum dapat dikirim karena syarat belum lengkap.');
+        // Tidak boleh ajukan sidang jika sudah memiliki jadwal sidang
+        if (Sidangs::query()->where('mahasiswa_id', $mahasiswa->id)->exists()) {
+            $this->dispatch('notify', message: 'Anda sudah memiliki jadwal sidang yang ditetapkan.');
             return;
         }
 
-        $pengajuan = PengajuanSidang::query()->firstOrNew(['mahasiswa_id' => $mahasiswa->id]);
+        // Tidak boleh ajukan ulang jika pengajuan sudah disetujui admin
+        $existing = PengajuanSidang::query()->where('mahasiswa_id', $mahasiswa->id)->first();
+        if ($existing && $existing->status === 'approved') {
+            $this->dispatch('notify', message: 'Pengajuan sidang Anda sudah disetujui dan dijadwalkan.');
+            return;
+        }
+
+        $checks = $this->buildChecklist($mahasiswa->id);
+
+        if (! $checks['proposal'] || ! $checks['skripsi']) {
+            $this->dispatch('notify', message: 'Pengajuan sidang belum dapat dikirim karena dokumen wajib belum disetujui dosen.');
+            return;
+        }
+
+        $pengajuan = $existing ?? new PengajuanSidang(['mahasiswa_id' => $mahasiswa->id]);
         $pengajuan->status = 'pending';
         $pengajuan->status_dosen = 'pending';
         $pengajuan->status_kaprodi = 'pending';
@@ -56,11 +69,8 @@ class MahasiswaPengajuanSidang extends Component
         $hasSidangSchedule = Sidangs::query()->where('mahasiswa_id', $mahasiswaId)->exists();
 
         return [
-            'proposal' => $dokumenChecklist['proposal'],
-            'laporan_ta' => $dokumenChecklist['laporan_ta'],
-            'jurnal' => $dokumenChecklist['jurnal'],
-            'bebas_lab' => $dokumenChecklist['bebas_lab'],
-            'bebas_pustaka' => $dokumenChecklist['bebas_pustaka'],
+            'proposal'          => $dokumenChecklist['proposal'],
+            'skripsi'           => $dokumenChecklist['skripsi'],
             'belum_dijadwalkan' => ! $hasSidangSchedule,
         ];
     }

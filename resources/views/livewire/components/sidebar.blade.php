@@ -7,7 +7,7 @@
         $mahasiswaHasPembimbing =
             !$isMahasiswa || Auth::user()->mahasiswa?->bimbingans()->whereNotNull('dosen_id')->exists();
         $showMahasiswaLock = $isMahasiswa && !$mahasiswaHasPembimbing;
-        $mahasiswaLockInfo = 'Menu ini dikunci sampai dosen pembimbing ditentukan admin.';
+        $mahasiswaLockInfo = 'Menu ini dikunci sampai dosen pembimbing ditetapkan oleh kaprodi/admin.';
         $dashboardRoute = $isAdmin
             ? route('dashboard')
             : ($isKaprodi
@@ -263,6 +263,21 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{ route('kaprodi.pengajuan-judul') }}" wire:navigate
+                                        class="group hover:bg-blue-100 flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm/6 font-semibold text-gray-600 {{ request()->routeIs('kaprodi.pengajuan-judul') ? 'bg-blue-100 text-indigo-500' : '' }}">
+                                        <div
+                                            class="flex items-center gap-x-3.5 group-hover:ml-3 transition-all {{ request()->routeIs('kaprodi.pengajuan-judul') ? 'ml-3' : '' }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                            <span>Pengajuan Judul & Pembimbing</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('kaprodi.laporan') }}" wire:navigate
                                         class="group hover:bg-blue-100 flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm/6 font-semibold text-gray-600 {{ request()->routeIs('kaprodi.laporan') || request()->routeIs('kaprodi.laporan.pdf') ? 'bg-blue-100 text-indigo-500' : '' }}">
                                         <div
@@ -292,7 +307,6 @@
                                                     d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931ZM19.5 7.125 16.875 4.5" />
                                             </svg>
                                             <span>Pengajuan Judul</span>
-                                            <x-ui.lock-indicator :show="$showMahasiswaLock" :message="$mahasiswaLockInfo" />
                                         </div>
                                     </a>
                                 </li>

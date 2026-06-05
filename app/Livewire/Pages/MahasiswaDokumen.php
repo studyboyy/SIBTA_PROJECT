@@ -193,10 +193,7 @@ class MahasiswaDokumen extends Component
             'documentOptions' => SidangDocumentCatalog::options(),
             'requiredDocumentLabels' => [
                 'proposal' => SidangDocumentCatalog::label('proposal'),
-                'laporan_ta' => SidangDocumentCatalog::label('laporan_ta'),
-                'jurnal' => SidangDocumentCatalog::label('jurnal'),
-                'bebas_lab' => SidangDocumentCatalog::label('bebas_lab'),
-                'bebas_pustaka' => SidangDocumentCatalog::label('bebas_pustaka'),
+                'skripsi'  => SidangDocumentCatalog::label('skripsi'),
             ],
             'kelayakanChecklist' => $kelayakanChecklist,
         ]);

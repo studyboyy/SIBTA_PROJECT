@@ -16,6 +16,7 @@ use App\Livewire\Pages\JadwalSidang;
 use App\Livewire\Pages\KaprodiDashboard;
 use App\Livewire\Pages\KaprodiLaporan;
 use App\Livewire\Pages\KaprodiManagement;
+use App\Livewire\Pages\KaprodiPengajuanJudul;
 use App\Livewire\Pages\KaprodiSidangApproval;
 use App\Livewire\Pages\Laporan;
 use App\Livewire\Pages\Mahasiswa;
@@ -91,13 +92,13 @@ Route::middleware(['auth', 'role:dosen'])->group(function () {
 
 Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
     Route::livewire('/mahasiswa/dashboard', MahasiswaDashboard::class)->name('mahasiswa.dashboard');
+    Route::livewire('/mahasiswa/pengajuan-judul', MahasiswaPengajuanJudul::class)->name('mahasiswa.pengajuan-judul');
 
     Route::middleware('mahasiswa.has.pembimbing')->group(function () {
         Route::livewire('/mahasiswa/profil', MahasiswaProfile::class)->name('mahasiswa.profile');
         Route::livewire('/mahasiswa/bimbingan', MahasiswaBimbingan::class)->name('mahasiswa.bimbingan');
         Route::livewire('/mahasiswa/bimbingan-online', MahasiswaBimbinganOnline::class)->name('mahasiswa.bimbingan-online');
         Route::livewire('/mahasiswa/dokumen', MahasiswaDokumen::class)->name('mahasiswa.dokumen');
-        Route::livewire('/mahasiswa/pengajuan-judul', MahasiswaPengajuanJudul::class)->name('mahasiswa.pengajuan-judul');
         Route::livewire('/mahasiswa/pengajuan-sidang', MahasiswaPengajuanSidang::class)->name('mahasiswa.pengajuan-sidang');
     });
 });
@@ -106,6 +107,7 @@ Route::middleware(['auth', 'role:kaprodi|pimpinan'])->group(function () {
     Route::livewire('/kaprodi/dashboard', KaprodiDashboard::class)->name('kaprodi.dashboard');
     Route::livewire('/kaprodi/laporan', KaprodiLaporan::class)->name('kaprodi.laporan');
     Route::livewire('/kaprodi/approval-sidang', KaprodiSidangApproval::class)->name('kaprodi.approval-sidang');
+    Route::livewire('/kaprodi/pengajuan-judul', KaprodiPengajuanJudul::class)->name('kaprodi.pengajuan-judul');
     Route::livewire('/kaprodi/profil', AdminProfile::class)->name('kaprodi.profile');
     Route::get('/kaprodi/laporan/pdf', function () {
         $summary = app(\App\Support\KaprodiReportSummary::class)->build(user: Auth::user());

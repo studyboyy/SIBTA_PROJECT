@@ -62,6 +62,13 @@ class KaprodiSidangApproval extends Component
 
         $status = $this->actionType === 'rejected' ? 'rejected' : 'approved';
 
+        // Kaprodi hanya bisa approve jika dosen pembimbing sudah ACC kelayakan
+        if ($status === 'approved' && ($pengajuan->status_dosen ?? 'pending') !== 'approved') {
+            $this->dispatch('notify', message: 'Tidak dapat disetujui. Dosen pembimbing belum memberikan ACC kelayakan sidang.');
+            $this->dispatch('close-modal', name: 'kaprodi-sidang-action');
+            return;
+        }
+
         $pengajuan->update([
             'status_kaprodi' => $status,
             'catatan_kaprodi' => trim($this->catatan_kaprodi) ?: null,

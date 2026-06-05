@@ -209,7 +209,7 @@ class DosenKontrolBimbingan extends Component
 
     public function updateSidangStatus(int $pengajuanId, string $status): void
     {
-        if (! in_array($status, ['pending', 'approved', 'revisi', 'rejected'], true)) {
+        if (! in_array($status, ['approved', 'revisi', 'rejected'], true)) {
             return;
         }
 
@@ -220,6 +220,12 @@ class DosenKontrolBimbingan extends Component
             ->whereKey($pengajuanId)
             ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->firstOrFail();
+
+        // Jika sudah approved dan sudah diproses kaprodi/admin, tidak boleh diubah
+        if ($pengajuan->status_dosen === 'approved' && $pengajuan->status_kaprodi === 'approved') {
+            session()->flash('error', 'Status kelayakan tidak dapat diubah setelah kaprodi menyetujui pengajuan sidang.');
+            return;
+        }
 
         $catatan = trim((string) ($this->catatanSidang[$pengajuanId] ?? ''));
 

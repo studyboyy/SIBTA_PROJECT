@@ -27,7 +27,7 @@
                         <div
                             class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
                             <span class="text-slate-700">{{ $label }}</span>
-                            @if ($kelayakanChecklist[$key])
+                            @if ($kelayakanChecklist[$key] ?? false)
                                 <span
                                     class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Layak</span>
                             @else

@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Models\Bimbingans;
 use App\Models\Dosens;
 use App\Models\Mahasiswas;
+use App\Models\Pengajuanjuduls;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -99,9 +100,18 @@ class Bimbingan extends Component
     {
         $blockedMahasiswaIds = Bimbingans::query()->pluck('mahasiswa_id');
 
-        $mahasiswas = Mahasiswas::with('user')
+        $mahasiswas = Mahasiswas::with(['user', 'pengajuanJuduls' => function ($q) {
+            $q->with('calonDosenPembimbing.user')
+                ->whereNotNull('calon_dosen_pembimbing_id')
+                ->latest()
+                ->limit(1);
+        }])
             ->whereNotIn('id', $blockedMahasiswaIds)
-            ->get();
+            ->get()
+            ->each(function ($mhs) {
+                $mhs->calon_dosen_name = $mhs->pengajuanJuduls->first()?->calonDosenPembimbing?->user?->name;
+                $mhs->calon_dosen_id = $mhs->pengajuanJuduls->first()?->calon_dosen_pembimbing_id;
+            });
 
         $bimbingans = Bimbingans::with(['mahasiswa.user', 'dosen.user'])
             ->when($this->search, function ($query) {

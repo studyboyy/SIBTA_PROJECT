@@ -93,14 +93,15 @@
 
     <livewire:components.modal name="admin-user">
         <div class="w-full">
-            <h3 class="text-center text-base font-semibold text-gray-900">
+            <h3 class="text-center text-base font-semibold text-slate-900">
                 {{ $editId ? 'Edit User Admin' : 'Tambah User Admin' }}</h3>
+            <p class="mt-1 text-center text-sm text-slate-500">Lengkapi data akun admin.</p>
 
-            <form wire:submit.prevent="store" class="mt-6 space-y-5">
+            <form wire:submit.prevent="store" class="mt-5 space-y-4">
                 <div>
                     <label for="admin_user_name" class="block text-sm font-medium text-slate-700">Nama lengkap</label>
                     <input id="admin_user_name" type="text" wire:model="name"
-                        class="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        class="mt-2 block w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('name')
                         <x-ui.validation-error :message="$message" />
                     @enderror
@@ -109,7 +110,7 @@
                 <div>
                     <label for="admin_user_email" class="block text-sm font-medium text-slate-700">Email</label>
                     <input id="admin_user_email" type="email" wire:model="email"
-                        class="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        class="mt-2 block w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('email')
                         <x-ui.validation-error :message="$message" />
                     @enderror
@@ -119,12 +120,12 @@
                     <label for="admin_user_password"
                         class="block text-sm font-medium text-slate-700">{{ $editId ? 'Password baru' : 'Password' }}</label>
                     <input id="admin_user_password" type="password" wire:model="password"
-                        class="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        class="mt-2 block w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('password')
                         <x-ui.validation-error :message="$message" />
                     @enderror
                     @if ($editId)
-                        <p class="mt-2 text-xs text-slate-500">Kosongkan jika tidak ingin mengubah password.</p>
+                        <p class="mt-1.5 text-xs text-slate-500">Kosongkan jika tidak ingin mengubah password.</p>
                     @endif
                 </div>
 
@@ -132,16 +133,16 @@
                     <label for="admin_user_password_confirmation"
                         class="block text-sm font-medium text-slate-700">Konfirmasi password</label>
                     <input id="admin_user_password_confirmation" type="password" wire:model="password_confirmation"
-                        class="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        class="mt-2 block w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="mt-2 grid grid-cols-2 gap-3">
                     <button type="button" wire:click="closeModal"
-                        class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                         Batal
                     </button>
                     <button type="submit"
-                        class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">
+                        class="inline-flex w-full justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
                         {{ $editId ? 'Simpan Perubahan' : 'Tambah Admin' }}
                     </button>
                 </div>
@@ -151,17 +152,16 @@
 
     <livewire:components.modal name="delete-admin-user">
         <div class="w-full">
-            <h3 class="text-center text-base font-semibold text-gray-900">Hapus user admin {{ $deleteName }}?</h3>
-            <p class="mt-3 text-center text-sm text-slate-500">Tindakan ini akan mencabut akses admin dari akun
-                tersebut.</p>
+            <h3 class="text-center text-lg font-semibold text-slate-900">Hapus user admin {{ $deleteName }}?</h3>
+            <p class="mt-3 text-center text-sm text-slate-500">Tindakan ini akan mencabut akses admin dari akun tersebut.</p>
 
             <div class="mt-6 grid grid-cols-2 gap-3">
                 <button type="button" wire:click="$dispatch('close-modal', { name: 'delete-admin-user' })"
-                    class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                     Batal
                 </button>
                 <button type="button" wire:click="delete"
-                    class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-500">
+                    class="inline-flex w-full justify-center rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500">
                     Hapus
                 </button>
             </div>
@@ -170,7 +170,7 @@
 
     <livewire:components.modal name="reset-admin-password">
         <div class="w-full">
-            <h3 class="text-center text-base font-semibold text-gray-900">Reset password admin?</h3>
+            <h3 class="text-center text-lg font-semibold text-slate-900">Reset password admin?</h3>
             <p class="mt-3 text-center text-sm text-slate-500">
                 Password untuk <span class="font-semibold text-slate-700">{{ $resetEmail }}</span> akan diubah ke
                 password acak baru.
@@ -178,17 +178,16 @@
 
             <div class="mt-6 grid grid-cols-2 gap-3">
                 <button type="button" wire:click="$dispatch('close-modal', { name: 'reset-admin-password' })"
-                    class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                     Batal
                 </button>
                 <button type="button" wire:click="resetPassword"
-                    class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">
+                    class="inline-flex w-full justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
                     Ya, Reset
                 </button>
             </div>
         </div>
     </livewire:components.modal>
 
-    <p class="text-xs text-slate-500">Gunakan ikon kunci untuk reset password cepat admin. Password baru akan tampil di
-        notifikasi.</p>
+    <p class="text-xs text-slate-500">Gunakan ikon kunci untuk reset password cepat admin. Password baru akan tampil di notifikasi.</p>
 </div>

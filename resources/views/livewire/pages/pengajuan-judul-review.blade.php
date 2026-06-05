@@ -20,8 +20,14 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <h2 class="text-lg font-semibold text-slate-900">Daftar Pengajuan</h2>
-                <p class="text-sm text-slate-500">Kelola status pengajuan judul mahasiswa bimbingan Anda.</p>
-                <p class="text-xs text-slate-400">Dosen: {{ $dosen->user?->name ?? '-' }}</p>
+                <p class="text-sm text-slate-500">Pengajuan judul dari mahasiswa yang Anda bimbing.</p>
+                <p class="text-xs text-slate-400">Dosen: {{ $dosen->user?->name ?? '-' }}
+                    @if ($mahasiswaCount > 0)
+                        • {{ $mahasiswaCount }} mahasiswa bimbingan
+                    @else
+                        • <span class="text-amber-600">Belum ada mahasiswa bimbingan yang ditetapkan</span>
+                    @endif
+                </p>
             </div>
             <div class="grid w-full gap-3 sm:grid-cols-2 lg:max-w-xl">
                 <input type="text" wire:model.live.debounce.300ms="search"
@@ -39,6 +45,12 @@
         </div>
 
         <div class="mt-6 space-y-4">
+            @if ($mahasiswaCount === 0)
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-6 text-center text-sm text-amber-800">
+                    <p class="font-semibold">Belum ada mahasiswa bimbingan</p>
+                    <p class="mt-1 text-xs text-amber-700">Anda akan dapat mereview pengajuan judul setelah admin atau kaprodi menetapkan Anda sebagai dosen pembimbing mahasiswa.</p>
+                </div>
+            @else
             @forelse ($pengajuanList as $pengajuan)
                 @php
                     $status = strtolower($pengajuan->status ?? 'pending');
@@ -67,6 +79,14 @@
 
                     @if ($pengajuan->deskripsi)
                         <p class="mt-3 text-sm text-slate-600">{{ $pengajuan->deskripsi }}</p>
+                    @endif
+
+                    @if ($pengajuan->calonDosenPembimbing)
+                        <div class="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-800">
+                            <span class="font-medium text-indigo-900">Calon Dosen Pembimbing Pilihan Mahasiswa:</span>
+                            {{ $pengajuan->calonDosenPembimbing->user->name ?? '-' }}
+                            ({{ $pengajuan->calonDosenPembimbing->nidn }})
+                        </div>
                     @endif
 
                     @if (($pengajuan->revisi_ke ?? 0) > 0)
@@ -134,6 +154,7 @@
                     Belum ada data pengajuan judul.
                 </div>
             @endforelse
+            @endif
         </div>
 
         <div class="mt-6">

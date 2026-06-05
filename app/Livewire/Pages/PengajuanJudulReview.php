@@ -94,10 +94,12 @@ class PengajuanJudulReview extends Component
             abort(404, 'Data dosen tidak ditemukan untuk akun ini.');
         }
 
+        // Dosen hanya bisa review pengajuan judul mahasiswa yang sudah resmi ditetapkan
+        // sebagai pembimbingnya (ada record di tabel bimbingans)
         $mahasiswaIds = $this->getPrimaryMahasiswaIdsForDosen($dosen->id);
 
         $pengajuanList = Pengajuanjuduls::query()
-            ->with(['mahasiswa.user'])
+            ->with(['mahasiswa.user', 'calonDosenPembimbing.user'])
             ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->when($this->status !== '', fn($query) => $query->where('status', $this->status))
             ->when($this->search, function ($query) {
@@ -116,6 +118,7 @@ class PengajuanJudulReview extends Component
         return view('livewire.pages.pengajuan-judul-review', [
             'dosen' => $dosen,
             'pengajuanList' => $pengajuanList,
+            'mahasiswaCount' => $mahasiswaIds->count(),
         ]);
     }
 

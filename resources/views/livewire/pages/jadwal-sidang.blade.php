@@ -1,19 +1,24 @@
 <div class="mx-auto max-w-7xl space-y-6 p-6">
     <div class="rounded-3xl bg-linear-to-r from-slate-900 via-blue-900 to-cyan-800 px-6 py-8 text-white shadow-lg">
-        <h1 class="text-2xl font-bold sm:text-3xl">Jadwal Sidang & Penentuan Penguji</h1>
-        <p class="mt-2 max-w-3xl text-sm text-blue-100 sm:text-base">
-            Buat jadwal sidang lalu approve pengajuan mahasiswa agar otomatis masuk ke jadwal yang tersedia.
-        </p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-medium uppercase tracking-[0.3em] text-cyan-100/80">Panel Admin</p>
+                <h1 class="mt-2 text-2xl font-bold sm:text-3xl">Jadwal Sidang & Penentuan Penguji</h1>
+                <p class="mt-2 max-w-3xl text-sm text-blue-100 sm:text-base">
+                    Buat jadwal sidang lalu approve pengajuan mahasiswa agar otomatis masuk ke jadwal yang tersedia.
+                </p>
+            </div>
+        </div>
     </div>
 
     @if (session('success'))
-        <div class="rounded-lg bg-green-100 px-4 py-3 text-sm font-medium text-green-700">
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="rounded-lg bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {{ session('error') }}
         </div>
     @endif
@@ -194,10 +199,10 @@
                                             {{ $batch->sidangs_count }}/{{ $batch->kuota }} terisi
                                         </span>
                                         <button wire:click="edit({{ $batch->id }})"
-                                            class="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-600">Edit</button>
+                                            class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100">Edit</button>
                                         <button wire:click="hapusBatch({{ $batch->id }})"
                                             wire:confirm="Hapus batch gelombang {{ $batch->gelombang }}?"
-                                            class="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600">Hapus</button>
+                                            class="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">Hapus</button>
                                     </div>
                                 </div>
                                 <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
@@ -280,13 +285,6 @@
                         <div class="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
                             <span class="font-semibold text-slate-900">Catatan mahasiswa:</span>
                             {{ $pengajuan->catatan_mahasiswa }}
-                        </div>
-                    @endif
-
-                    @if ($pengajuan->mahasiswa?->programStudi?->name)
-                        <div class="mt-3 rounded-xl bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
-                            <span class="font-semibold text-cyan-900">Program studi:</span>
-                            {{ $pengajuan->mahasiswa->programStudi->name }}
                         </div>
                     @endif
 
@@ -404,7 +402,7 @@
                                 <td class="px-4 py-3 text-center">
                                     <button wire:click="hapusSidang({{ $sidang->id }})"
                                         wire:confirm="Hapus jadwal sidang {{ $sidang->mahasiswa?->user?->name ?? '' }}?"
-                                        class="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600">
+                                        class="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">
                                         Hapus
                                     </button>
                                 </td>

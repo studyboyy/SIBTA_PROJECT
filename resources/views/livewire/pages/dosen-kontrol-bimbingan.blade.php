@@ -293,6 +293,7 @@
                     @endif
 
                     <div class="mt-3 flex flex-wrap gap-2">
+                        @if ($pengajuan->status_dosen !== 'approved')
                         <button wire:click="updateSidangStatus({{ $pengajuan->id }}, 'approved')"
                             class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700">
                             ACC Kelayakan Sidang
@@ -305,6 +306,11 @@
                             class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700">
                             Reject
                         </button>
+                        @else
+                        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700 font-semibold">
+                            Kelayakan sidang sudah di-ACC. Menunggu persetujuan kaprodi dan admin.
+                        </div>
+                        @endif
                     </div>
                 </article>
             @empty
