@@ -97,7 +97,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Nama Prodi</label>
                     <input type="text" wire:model.defer="name"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
                     @error('name')
                         <x-ui.validation-error :message="$message" />
                     @enderror
@@ -105,7 +105,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Kode</label>
                     <input type="text" wire:model.defer="code"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm uppercase focus:border-emerald-500 focus:ring-emerald-500" />
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm uppercase text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
                     @error('code')
                         <x-ui.validation-error :message="$message" />
                     @enderror
@@ -113,7 +113,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Kaprodi</label>
                     <select wire:model.defer="kaprodi_user_id"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100">
                         <option value="">Belum ditentukan</option>
                         @foreach ($kaprodiUsers as $kaprodi)
                             <option value="{{ $kaprodi->id }}">{{ $kaprodi->name }}</option>

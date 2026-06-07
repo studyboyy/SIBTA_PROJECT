@@ -150,76 +150,73 @@
 
     <livewire:components.modal name="dosen">
         <div class="w-full">
-            <h3 class="text-center text-lg font-semibold text-slate-900">{{ $editId ? 'Edit Dosen' : 'Tambah Dosen' }}
-            </h3>
-            <p class="mt-1 text-center text-sm text-slate-500">Isi data dosen pembimbing secara lengkap.</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">{{ $editId ? 'Edit Data Dosen' : 'Tambah Dosen Baru' }}</h3>
+                    <p class="mt-0.5 text-xs text-slate-400">Isi data dosen pembimbing secara lengkap.</p>
+                </div>
+                <button wire:click="closeModal" type="button"
+                    class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-            <form wire:submit.prevent="store" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="mt-4 border-t border-slate-100"></div>
+
+            <form wire:submit.prevent="store" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 @csrf
                 <div class="sm:col-span-2">
-                    <label for="name" class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
-                    <input id="name" type="text" wire:model.defer="name" placeholder="Nama dosen"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('name')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
+                    <input type="text" wire:model.defer="name" placeholder="Nama dosen"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('name') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div>
-                    <label for="nidn" class="block text-sm font-medium text-slate-700">NIDN</label>
-                    <input id="nidn" type="text" wire:model.defer="nidn" placeholder="Nomor induk dosen"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('nidn')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">NIDN</label>
+                    <input type="text" wire:model.defer="nidn" placeholder="Nomor induk dosen"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('nidn') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div>
-                    <label for="jabatan" class="block text-sm font-medium text-slate-700">Jabatan</label>
-                    <input id="jabatan" type="text" wire:model.defer="jabatan" placeholder="Contoh: Lektor"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('jabatan')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">Jabatan</label>
+                    <input type="text" wire:model.defer="jabatan" placeholder="Contoh: Lektor"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('jabatan') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-                    <input id="email" type="email" wire:model.defer="email" placeholder="dosen@email.com"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('email')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" wire:model.defer="email" placeholder="dosen@email.com"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('email') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-slate-700">No Whatsapp</label>
-                    <input id="phone" type="text" wire:model.defer="phone" placeholder="08xxxxxxxxxx"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('phone')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">No. WhatsApp</label>
+                    <input type="text" wire:model.defer="phone" placeholder="08xxxxxxxxxx"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('phone') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div>
-                    <label for="kuota_bimbingan" class="block text-sm font-medium text-slate-700">Kuota
-                        Bimbingan</label>
-                    <input id="kuota_bimbingan" type="number" min="0" wire:model.defer="kuota_bimbingan"
-                        placeholder="Contoh: 10"
-                        class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                    @error('kuota_bimbingan')
-                        <x-ui.validation-error :message="$message" />
-                    @enderror
+                    <label class="block text-sm font-medium text-slate-700">Kuota Bimbingan</label>
+                    <input type="number" min="0" wire:model.defer="kuota_bimbingan" placeholder="Contoh: 10"
+                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                    @error('kuota_bimbingan') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
-                <div class="sm:col-span-2 mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div class="sm:col-span-2 border-t border-slate-100 pt-4 flex justify-end gap-3">
                     <button type="button" wire:click="closeModal"
-                        class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                        class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                         Batal
                     </button>
                     <button type="submit"
-                        class="inline-flex w-full justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500">
-                        {{ $editId ? 'Simpan Perubahan' : 'Simpan Dosen' }}
+                        class="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                        {{ $editId ? 'Simpan Perubahan' : 'Tambah Dosen' }}
                     </button>
                 </div>
             </form>
@@ -228,42 +225,48 @@
 
     <livewire:components.modal name="delete">
         <div class="w-full">
-            <h3 class="text-center text-lg font-semibold text-slate-900">Hapus Data Dosen</h3>
-            <p class="mt-2 text-center text-sm text-slate-600">
-                Data <span class="font-semibold text-slate-900">{{ $name }}</span> akan dihapus permanen.
-            </p>
-            <p class="mt-1 text-center text-xs text-rose-600">Tindakan ini tidak dapat dibatalkan.</p>
-
-            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                    <svg class="size-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">Hapus Data Dosen</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">
+                        Data <span class="font-semibold text-slate-700">{{ $name }}</span> akan dihapus permanen.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
                 <button type="button" wire:click="$dispatch('close-modal', {name: 'delete'})"
-                    class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                    Batal
-                </button>
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
                 <button type="button" wire:click="delete"
-                    class="inline-flex w-full justify-center rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500">
-                    Ya, Hapus
-                </button>
+                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">Ya, Hapus</button>
             </div>
         </div>
     </livewire:components.modal>
 
     <livewire:components.modal name="reset-dosen-password">
         <div class="w-full">
-            <h3 class="text-center text-lg font-semibold text-slate-900">Reset password dosen?</h3>
-            <p class="mt-2 text-center text-sm text-slate-600">
-                Password untuk <span class="font-semibold text-slate-900">{{ $resetEmail }}</span> akan diubah ke
-                password acak baru.
-            </p>
-
-            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <svg class="size-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a5.25 5.25 0 0 1 5.25 5.25v3.75H18V10.5a3.75 3.75 0 1 0-7.5 0v3.75H9V10.5a5.25 5.25 0 0 1 5.25-5.25h1.5ZM4.5 19.5h15a.75.75 0 0 0 .75-.75V12.75a.75.75 0 0 0-.75-.75h-15a.75.75 0 0 0-.75.75v6a.75.75 0 0 0 .75.75Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">Reset Password</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">
+                        Password untuk <span class="font-semibold text-slate-700">{{ $resetEmail }}</span> akan diubah ke password acak baru.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
                 <button type="button" wire:click="$dispatch('close-modal', {name: 'reset-dosen-password'})"
-                    class="inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                    Batal
-                </button>
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
                 <button type="button" wire:click="resetPassword"
-                    class="inline-flex w-full justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
-                    Ya, Reset
-                </button>
+                    class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Ya, Reset</button>
             </div>
         </div>
     </livewire:components.modal>

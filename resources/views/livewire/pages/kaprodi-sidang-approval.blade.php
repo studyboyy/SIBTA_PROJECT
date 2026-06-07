@@ -114,9 +114,10 @@
                 {{ $actionType === 'rejected' ? 'Tolak Pengajuan Sidang' : 'Approve Pengajuan Sidang' }}</h3>
             <p class="mt-2 text-center text-sm text-slate-600">Tambahkan catatan jika diperlukan sebelum keputusan
                 dikirim.</p>
-            <div class="mt-4"><label class="block text-sm font-medium text-slate-700">Catatan Kaprodi</label>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-slate-700">Catatan Kaprodi</label>
                 <textarea wire:model.defer="catatan_kaprodi" rows="4"
-                    class="mt-1 w-full rounded-xl border-slate-300 text-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea>
                 @error('catatan_kaprodi')
                     <x-ui.validation-error :message="$message" />
                 @enderror
