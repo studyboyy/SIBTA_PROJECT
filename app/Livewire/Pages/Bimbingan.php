@@ -5,7 +5,6 @@ namespace App\Livewire\Pages;
 use App\Models\Bimbingans;
 use App\Models\Dosens;
 use App\Models\Mahasiswas;
-use App\Models\Pengajuanjuduls;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,10 +14,12 @@ class Bimbingan extends Component
     use WithPagination;
 
     #[Title('Kelola Bimbingan')]
-
     public array $mahasiswa_ids = [];
+
     public $dosen_id = '';
+
     public $search = '';
+
     public int $perPage = 5;
 
     protected string $paginationTheme = 'tailwind';
@@ -38,9 +39,9 @@ class Bimbingan extends Component
     public function simpan(): void
     {
         $this->validate([
-            'mahasiswa_ids'   => 'required|array|min:1',
+            'mahasiswa_ids' => 'required|array|min:1',
             'mahasiswa_ids.*' => 'exists:mahasiswas,id',
-            'dosen_id'        => 'required|exists:dosens,id',
+            'dosen_id' => 'required|exists:dosens,id',
         ]);
 
         $dosen = Dosens::query()
@@ -52,29 +53,29 @@ class Bimbingan extends Component
 
         if ($remainingQuota <= 0) {
             session()->flash('error', 'Kuota dosen pembimbing ini sudah penuh.');
+
             return;
         }
 
         if ($selectedCount > $remainingQuota) {
-            session()->flash('error', 'Jumlah mahasiswa dipilih melebihi sisa kuota dosen. Sisa kuota saat ini: ' . $remainingQuota . '.');
+            session()->flash('error', 'Jumlah mahasiswa dipilih melebihi sisa kuota dosen. Sisa kuota saat ini: '.$remainingQuota.'.');
+
             return;
         }
 
         $skipped = 0;
-        $added   = 0;
+        $added = 0;
 
         foreach ($this->mahasiswa_ids as $mhsId) {
             $exists = Bimbingans::where('mahasiswa_id', $mhsId)->exists();
 
             if ($exists) {
                 $skipped++;
+
                 continue;
             }
 
-            Bimbingans::create([
-                'mahasiswa_id' => $mhsId,
-                'dosen_id'     => $this->dosen_id,
-            ]);
+            Bimbingans::setActiveSupervisor((int) $mhsId, (int) $this->dosen_id);
 
             $added++;
         }
@@ -82,9 +83,9 @@ class Bimbingan extends Component
         $this->reset(['mahasiswa_ids', 'dosen_id']);
 
         if ($added > 0 && $skipped === 0) {
-            session()->flash('success', $added . ' penugasan berhasil ditambahkan.');
+            session()->flash('success', $added.' penugasan berhasil ditambahkan.');
         } elseif ($added > 0) {
-            session()->flash('success', $added . ' ditambahkan, ' . $skipped . ' dilewati (sudah ada).');
+            session()->flash('success', $added.' ditambahkan, '.$skipped.' dilewati (sudah ada).');
         } else {
             session()->flash('error', 'Semua mahasiswa yang dipilih sudah memiliki dosen pembimbing.');
         }
@@ -100,25 +101,16 @@ class Bimbingan extends Component
     {
         $blockedMahasiswaIds = Bimbingans::query()->pluck('mahasiswa_id');
 
-        $mahasiswas = Mahasiswas::with(['user', 'pengajuanJuduls' => function ($q) {
-            $q->with('calonDosenPembimbing.user')
-                ->whereNotNull('calon_dosen_pembimbing_id')
-                ->latest()
-                ->limit(1);
-        }])
+        $mahasiswas = Mahasiswas::with('user')
             ->whereNotIn('id', $blockedMahasiswaIds)
-            ->get()
-            ->each(function ($mhs) {
-                $mhs->calon_dosen_name = $mhs->pengajuanJuduls->first()?->calonDosenPembimbing?->user?->name;
-                $mhs->calon_dosen_id = $mhs->pengajuanJuduls->first()?->calon_dosen_pembimbing_id;
-            });
+            ->get();
 
         $bimbingans = Bimbingans::with(['mahasiswa.user', 'dosen.user'])
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
-                    $subQuery->whereHas('mahasiswa.user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
-                        ->orWhereHas('mahasiswa', fn($q) => $q->where('nim', 'like', '%' . $this->search . '%'))
-                        ->orWhereHas('dosen.user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
+                    $subQuery->whereHas('mahasiswa.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+                        ->orWhereHas('mahasiswa', fn ($q) => $q->where('nim', 'like', '%'.$this->search.'%'))
+                        ->orWhereHas('dosen.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
                 });
             })
             ->latest()
@@ -148,7 +140,7 @@ class Bimbingan extends Component
         return view('livewire.pages.bimbingan', [
             'bimbingans' => $bimbingans,
             'mahasiswas' => $mahasiswas,
-            'dosens'     => $dosens,
+            'dosens' => $dosens,
         ]);
     }
 }

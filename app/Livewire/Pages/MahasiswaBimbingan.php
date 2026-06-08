@@ -3,6 +3,7 @@
 namespace App\Livewire\Pages;
 
 use App\Models\BimbinganLog;
+use App\Models\Bimbingans;
 use App\Models\BimbinganSessionAudit;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
@@ -12,12 +13,14 @@ use Livewire\WithPagination;
 
 class MahasiswaBimbingan extends Component
 {
-    use WithPagination;
     use WithoutUrlPagination;
+    use WithPagination;
 
     #[Title('Bimbingan Saya')]
     public string $search = '';
+
     public int $perPage = 10;
+
     public array $catatanMahasiswaDraft = [];
 
     public function updatedSearch(): void
@@ -30,6 +33,15 @@ class MahasiswaBimbingan extends Component
         $allowed = [5, 10, 15, 20];
         $this->perPage = in_array((int) $value, $allowed, true) ? (int) $value : 10;
         $this->resetPage();
+    }
+
+    private function getActiveDosenIds(int $mahasiswaId)
+    {
+        return Bimbingans::query()
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->pluck('dosen_id')
+            ->filter()
+            ->values();
     }
 
     public function konfirmasiKehadiran(int $logId, string $status): void
@@ -46,6 +58,7 @@ class MahasiswaBimbingan extends Component
         $log = BimbinganLog::query()
             ->whereKey($logId)
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('dosen_id', $this->getActiveDosenIds((int) $mahasiswa->id))
             ->firstOrFail();
 
         $fromStatus = $log->status_sesi ?? 'diajukan';
@@ -81,18 +94,19 @@ class MahasiswaBimbingan extends Component
         }
 
         $this->validate([
-            'catatanMahasiswaDraft.' . $logId => 'required|string|max:4000',
+            'catatanMahasiswaDraft.'.$logId => 'required|string|max:4000',
         ]);
 
         $log = BimbinganLog::query()
             ->whereKey($logId)
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('dosen_id', $this->getActiveDosenIds((int) $mahasiswa->id))
             ->firstOrFail();
 
         $catatan = trim((string) ($this->catatanMahasiswaDraft[$logId] ?? ''));
 
         if ($catatan === '') {
-            $this->addError('catatanMahasiswaDraft.' . $logId, 'Catatan hasil bimbingan tidak boleh kosong.');
+            $this->addError('catatanMahasiswaDraft.'.$logId, 'Catatan hasil bimbingan tidak boleh kosong.');
 
             return;
         }
@@ -102,7 +116,7 @@ class MahasiswaBimbingan extends Component
         ]);
 
         $this->catatanMahasiswaDraft[$logId] = $catatan;
-        $this->resetErrorBag('catatanMahasiswaDraft.' . $logId);
+        $this->resetErrorBag('catatanMahasiswaDraft.'.$logId);
 
         session()->flash('success', 'Catatan hasil bimbingan berhasil disimpan.');
     }
@@ -116,15 +130,21 @@ class MahasiswaBimbingan extends Component
             abort(404, 'Data mahasiswa tidak ditemukan untuk akun ini.');
         }
 
+        $activeDosenIds = $this->getActiveDosenIds((int) $mahasiswa->id);
+
         $bimbinganList = BimbinganLog::query()
-            ->with(['dosen.user', 'bimbinganMessages'])
+            ->with([
+                'dosen.user',
+                'bimbinganMessages' => fn ($query) => $query->whereIn('dosen_id', $activeDosenIds),
+            ])
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('dosen_id', $activeDosenIds)
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery
-                        ->where('catatan', 'like', '%' . $this->search . '%')
-                        ->orWhere('catatan_mahasiswa', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('dosen.user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
+                        ->where('catatan', 'like', '%'.$this->search.'%')
+                        ->orWhere('catatan_mahasiswa', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('dosen.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
                 });
             })
             ->orderByDesc('tanggal')
@@ -139,10 +159,12 @@ class MahasiswaBimbingan extends Component
 
         $totalBimbingan = BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('dosen_id', $activeDosenIds)
             ->count('id');
 
         $totalHadir = BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('dosen_id', $activeDosenIds)
             ->where('konfirmasi_mahasiswa', 'hadir')
             ->count('id');
 

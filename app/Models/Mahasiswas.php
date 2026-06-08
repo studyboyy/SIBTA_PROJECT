@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Prodi;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +11,63 @@ class Mahasiswas extends Model
 {
     use HasFactory;
 
+    public const STATUS_TA_PENDING = 'Pending';
+
+    public const STATUS_TA_PROSES = 'Proses';
+
+    public const STATUS_TA_SELESAI = 'Selesai';
+
+    protected static function booted(): void
+    {
+        static::saved(fn (self $mahasiswa) => $mahasiswa->syncStatusTa());
+    }
+
+    public function resolveStatusTa(): string
+    {
+        if ($this->hasCompletedSidang()) {
+            return self::STATUS_TA_SELESAI;
+        }
+
+        if ($this->hasPembimbing()) {
+            return self::STATUS_TA_PROSES;
+        }
+
+        return self::STATUS_TA_PENDING;
+    }
+
+    public function syncStatusTa(): void
+    {
+        $status = $this->resolveStatusTa();
+
+        if ($this->status_ta === $status) {
+            return;
+        }
+
+        $this->forceFill([
+            'status_ta' => $status,
+        ])->saveQuietly();
+    }
+
+    private function hasCompletedSidang(): bool
+    {
+        if ($this->relationLoaded('sidang')) {
+            return $this->sidang !== null && Sidangs::isCompletedStatus($this->sidang->status);
+        }
+
+        return $this->sidang()
+            ->whereIn('status', Sidangs::COMPLETED_STATUSES)
+            ->exists();
+    }
+
+    private function hasPembimbing(): bool
+    {
+        if ($this->relationLoaded('bimbingans')) {
+            return $this->bimbingans->isNotEmpty();
+        }
+
+        return $this->bimbingans()->exists();
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -19,7 +75,7 @@ class Mahasiswas extends Model
 
     public function dokumenTa()
     {
-        return $this->hasMany(\App\Models\DokumenTa::class, 'mahasiswa_id');
+        return $this->hasMany(DokumenTa::class, 'mahasiswa_id');
     }
 
     public function bimbingans()
@@ -29,7 +85,7 @@ class Mahasiswas extends Model
 
     public function bimbinganLogs()
     {
-        return $this->hasMany(\App\Models\BimbinganLog::class, 'mahasiswa_id');
+        return $this->hasMany(BimbinganLog::class, 'mahasiswa_id');
     }
 
     public function sidang()
@@ -50,6 +106,11 @@ class Mahasiswas extends Model
     public function pengajuanSidang()
     {
         return $this->hasOne(PengajuanSidang::class, 'mahasiswa_id');
+    }
+
+    public function pengajuanPembimbing()
+    {
+        return $this->hasMany(PengajuanPembimbing::class, 'mahasiswa_id');
     }
 
     public function programStudi()

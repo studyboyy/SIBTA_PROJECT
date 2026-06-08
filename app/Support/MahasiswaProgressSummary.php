@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Mahasiswas;
+use App\Models\Sidangs;
 use Illuminate\Support\Collection;
 
 class MahasiswaProgressSummary
@@ -135,7 +136,7 @@ class MahasiswaProgressSummary
         bool $hasSidang,
         ?string $sidangStatus,
     ): string {
-        if ($hasSidang && in_array($this->normalizeStatus($sidangStatus), ['approved', 'selesai', 'lulus'], true)) {
+        if ($hasSidang && Sidangs::isCompletedStatus($sidangStatus)) {
             return 'Selesai Sidang';
         }
 

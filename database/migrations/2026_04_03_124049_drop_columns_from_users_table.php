@@ -12,8 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['nim', 'photo', 'phone']);
+            if (Schema::hasColumn('users', 'nim')) {
+                $table->dropUnique(['nim']);
+            }
+
+            if (Schema::hasColumn('users', 'phone')) {
+                $table->dropUnique(['phone']);
+            }
         });
+
+        $columns = array_values(array_filter(
+            ['nim', 'photo', 'phone'],
+            fn (string $column) => Schema::hasColumn('users', $column),
+        ));
+
+        if ($columns !== []) {
+            Schema::table('users', function (Blueprint $table) use ($columns) {
+                $table->dropColumn($columns);
+            });
+        }
     }
 
     /**

@@ -81,14 +81,6 @@
                         <p class="mt-3 text-sm text-slate-600">{{ $pengajuan->deskripsi }}</p>
                     @endif
 
-                    @if ($pengajuan->calonDosenPembimbing)
-                        <div class="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-800">
-                            <span class="font-medium text-indigo-900">Calon Dosen Pembimbing Pilihan Mahasiswa:</span>
-                            {{ $pengajuan->calonDosenPembimbing->user->name ?? '-' }}
-                            ({{ $pengajuan->calonDosenPembimbing->nidn }})
-                        </div>
-                    @endif
-
                     @if (($pengajuan->revisi_ke ?? 0) > 0)
                         <div class="mt-3 rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-700">
                             <span class="font-medium text-blue-800">Revisi Mahasiswa:</span>

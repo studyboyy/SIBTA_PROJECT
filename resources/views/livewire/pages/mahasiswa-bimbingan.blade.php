@@ -82,9 +82,9 @@
                                 </p>
                             </div>
                             <p class="mt-2 whitespace-pre-line text-sm text-amber-900">{{ $catatanDosen->message }}</p>
-                            @if (($bimbingan->bimbinganMessages->where('sender_role', 'dosen')->count() ?? 0) > 1)
+                            @if (($bimbingan->bimbinganMessages->where('sender_role', 'dosen')->where('dosen_id', $bimbingan->dosen_id)->count() ?? 0) > 1)
                                 <p class="mt-2 text-xs text-amber-700">
-                                    Ada {{ $bimbingan->bimbinganMessages->where('sender_role', 'dosen')->count() }}
+                                    Ada {{ $bimbingan->bimbinganMessages->where('sender_role', 'dosen')->where('dosen_id', $bimbingan->dosen_id)->count() }}
                                     catatan dari dosen untuk sesi ini.
                                 </p>
                             @endif

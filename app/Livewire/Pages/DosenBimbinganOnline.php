@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pages;
 
+use App\Models\BimbinganLog;
 use App\Models\BimbinganMessage;
 use App\Models\Bimbingans;
 use App\Models\Mahasiswas;
@@ -16,17 +17,19 @@ use Livewire\WithPagination;
 class DosenBimbinganOnline extends Component
 {
     use WithFileUploads;
-    use WithPagination;
     use WithoutUrlPagination;
+    use WithPagination;
 
     #[Title('Chat Bimbingan Online')]
     public int|string $selected_mahasiswa_id = '';
+
     public string $message = '';
+
     public $attachment;
 
     private function isChatEnabled(int $mahasiswaId, int $dosenId): bool
     {
-        return \App\Models\BimbinganLog::query()
+        return BimbinganLog::query()
             ->where('mahasiswa_id', $mahasiswaId)
             ->where('dosen_id', $dosenId)
             ->where('konfirmasi_mahasiswa', 'hadir')
@@ -59,6 +62,7 @@ class DosenBimbinganOnline extends Component
 
         if (trim($this->message) === '' && ! $this->attachment) {
             $this->addError('message', 'Pesan atau lampiran wajib diisi.');
+
             return;
         }
 
@@ -73,11 +77,13 @@ class DosenBimbinganOnline extends Component
 
         if (! $isOwned) {
             $this->addError('selected_mahasiswa_id', 'Mahasiswa ini bukan bimbingan Anda.');
+
             return;
         }
 
         if (! $this->isChatEnabled($selectedMahasiswaId, (int) $dosen->id)) {
             $this->addError('message', 'Chat dikunci sampai mahasiswa mengikuti jadwal bimbingan.');
+
             return;
         }
 
@@ -85,10 +91,10 @@ class DosenBimbinganOnline extends Component
 
         if ($this->attachment) {
             $filename = now()->format('YmdHis')
-                . '-' . Str::slug('dosen-' . $dosen->id . '-chat')
-                . '.' . $this->attachment->getClientOriginalExtension();
+                .'-'.Str::slug('dosen-'.$dosen->id.'-chat')
+                .'.'.$this->attachment->getClientOriginalExtension();
 
-            $attachmentPath = $this->attachment->storeAs('bimbingan-chat/dosen-' . $dosen->id, $filename, 'public');
+            $attachmentPath = $this->attachment->storeAs('bimbingan-chat/dosen-'.$dosen->id, $filename, 'public');
         }
 
         BimbinganMessage::query()->create([
@@ -110,13 +116,19 @@ class DosenBimbinganOnline extends Component
 
         $mahasiswaIds = Bimbingans::query()
             ->where('dosen_id', $dosen->id)
-            ->pluck('mahasiswa_id');
+            ->pluck('mahasiswa_id')
+            ->values();
 
         $mahasiswas = Mahasiswas::query()
             ->with('user')
             ->whereIn('id', $mahasiswaIds)
             ->orderBy('nim')
             ->get();
+
+        if ($this->selected_mahasiswa_id !== '' && ! $mahasiswaIds->contains((int) $this->selected_mahasiswa_id)) {
+            $this->selected_mahasiswa_id = '';
+            $this->resetPage('chatPage');
+        }
 
         if ($this->selected_mahasiswa_id === '' && $mahasiswas->isNotEmpty()) {
             $this->selected_mahasiswa_id = (string) $mahasiswas->first()->id;
@@ -166,8 +178,8 @@ class DosenBimbinganOnline extends Component
         $messages = BimbinganMessage::query()
             ->with(['mahasiswa.user'])
             ->where('dosen_id', $dosen->id)
-            ->when($this->selected_mahasiswa_id !== '', fn($q) => $q->where('mahasiswa_id', (int) $this->selected_mahasiswa_id))
-            ->when(! $chatEnabled, fn($q) => $q->whereRaw('1=0'))
+            ->when($this->selected_mahasiswa_id !== '', fn ($q) => $q->where('mahasiswa_id', (int) $this->selected_mahasiswa_id))
+            ->when(! $chatEnabled, fn ($q) => $q->whereRaw('1=0'))
             ->oldest('id')
             ->paginate(12, ['*'], 'chatPage');
 

@@ -39,6 +39,12 @@ class MahasiswaPengajuanSidang extends Component
             return;
         }
 
+        if ($existing && ! $this->canResubmit($existing)) {
+            $this->dispatch('notify', message: 'Pengajuan sidang sedang diproses. Tunggu keputusan dosen, kaprodi, atau admin sebelum mengirim ulang.');
+
+            return;
+        }
+
         $checks = $this->buildChecklist($mahasiswa->id);
 
         if (! $checks['proposal'] || ! $checks['skripsi']) {
@@ -60,6 +66,23 @@ class MahasiswaPengajuanSidang extends Component
         $pengajuan->save();
 
         $this->dispatch('notify', message: 'Pengajuan sidang berhasil dikirim.');
+    }
+
+    private function canResubmit(PengajuanSidang $pengajuan): bool
+    {
+        if (($pengajuan->status ?? 'pending') === 'rejected') {
+            return true;
+        }
+
+        if (in_array($pengajuan->status_dosen ?? 'pending', ['revisi', 'rejected'], true)) {
+            return true;
+        }
+
+        if (($pengajuan->status_kaprodi ?? 'pending') === 'rejected') {
+            return true;
+        }
+
+        return false;
     }
 
     private function buildChecklist(int $mahasiswaId): array
@@ -96,6 +119,7 @@ class MahasiswaPengajuanSidang extends Component
             'checklist' => $checklist,
             'isEligible' => $isEligible,
             'pengajuan' => $pengajuan,
+            'canResubmit' => $pengajuan ? $this->canResubmit($pengajuan) : true,
         ]);
     }
 }

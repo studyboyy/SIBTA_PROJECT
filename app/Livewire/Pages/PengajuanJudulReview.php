@@ -12,14 +12,18 @@ use Livewire\WithPagination;
 
 class PengajuanJudulReview extends Component
 {
-    use WithPagination;
     use WithoutUrlPagination;
+    use WithPagination;
 
     #[Title('Review Pengajuan Judul')]
     public string $search = '';
+
     public string $status = '';
+
     public int $perPage = 10;
+
     public array $catatan = [];
+
     public array $editingStatusIds = [];
 
     public function updatedSearch(): void
@@ -52,7 +56,7 @@ class PengajuanJudulReview extends Component
     {
         $this->editingStatusIds = array_values(array_filter(
             $this->editingStatusIds,
-            fn($id) => (int) $id !== $pengajuanId
+            fn ($id) => (int) $id !== $pengajuanId
         ));
 
         unset($this->catatan[$pengajuanId]);
@@ -68,7 +72,8 @@ class PengajuanJudulReview extends Component
         $catatan = trim((string) ($this->catatan[$pengajuanId] ?? ''));
 
         if (in_array($status, ['revisi', 'rejected'], true) && $catatan === '') {
-            $this->addError('catatan.' . $pengajuanId, 'Catatan wajib diisi untuk status revisi atau rejected.');
+            $this->addError('catatan.'.$pengajuanId, 'Catatan wajib diisi untuk status revisi atau rejected.');
+
             return;
         }
 
@@ -99,17 +104,17 @@ class PengajuanJudulReview extends Component
         $mahasiswaIds = $this->getPrimaryMahasiswaIdsForDosen($dosen->id);
 
         $pengajuanList = Pengajuanjuduls::query()
-            ->with(['mahasiswa.user', 'calonDosenPembimbing.user'])
+            ->with(['mahasiswa.user'])
             ->whereIn('mahasiswa_id', $mahasiswaIds)
-            ->when($this->status !== '', fn($query) => $query->where('status', $this->status))
+            ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery
-                        ->where('judul', 'like', '%' . $this->search . '%')
-                        ->orWhere('deskripsi', 'like', '%' . $this->search . '%')
-                        ->orWhere('catatan', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('mahasiswa.user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
-                        ->orWhereHas('mahasiswa', fn($q) => $q->where('nim', 'like', '%' . $this->search . '%'));
+                        ->where('judul', 'like', '%'.$this->search.'%')
+                        ->orWhere('deskripsi', 'like', '%'.$this->search.'%')
+                        ->orWhere('catatan', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('mahasiswa.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+                        ->orWhereHas('mahasiswa', fn ($q) => $q->where('nim', 'like', '%'.$this->search.'%'));
                 });
             })
             ->latest()

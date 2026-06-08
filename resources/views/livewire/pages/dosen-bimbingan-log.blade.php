@@ -101,12 +101,19 @@
                         <label class="mb-1 block text-sm font-medium text-slate-700">
                             {{ ($mode ?? 'offline') === 'online' ? 'Link Meeting' : 'Lokasi Bimbingan' }}
                         </label>
-                        <input type="text" wire:model="lokasi"
-                            placeholder="{{ ($mode ?? 'offline') === 'online' ? 'https://zoom.us/j/123...' : 'Ruang E2.11' }}"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-                        @error('lokasi')
-                            <x-ui.validation-error :message="$message" />
-                        @enderror
+                        @if (($mode ?? 'offline') === 'online')
+                            <input type="url" wire:model="link_online" placeholder="https://zoom.us/j/123..."
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                            @error('link_online')
+                                <x-ui.validation-error :message="$message" />
+                            @enderror
+                        @else
+                            <input type="text" wire:model="lokasi" placeholder="Ruang E2.11"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
+                            @error('lokasi')
+                                <x-ui.validation-error :message="$message" />
+                            @enderror
+                        @endif
                     </div>
 
                     {{-- Catatan --}}
@@ -174,7 +181,9 @@
                                     '|' .
                                     ($log->mode ?? '') .
                                     '|' .
-                                    ($log->lokasi ?? ''),
+                                    ($log->lokasi ?? '') .
+                                    '|' .
+                                    ($log->link_online ?? ''),
                             );
                         @endphp
 
@@ -188,7 +197,8 @@
                                 ->where('tanggal', $log->tanggal)
                                 ->where('jam', $log->jam)
                                 ->where('mode', $log->mode)
-                                ->where('lokasi', $log->lokasi);
+                                ->where('lokasi', $log->lokasi)
+                                ->where('link_online', $log->link_online);
                             $first = $sessionItems->first();
                             $isSelesai = ($first->status_sesi ?? 'diajukan') === 'selesai';
                         @endphp
@@ -202,8 +212,14 @@
                                         - {{ ucfirst($first->mode ?? 'offline') }}
                                     </p>
                                     <p class="text-xs text-slate-500">
-                                        Lokasi: {{ $first->lokasi ?: '—' }} • Peserta: {{ $sessionItems->count() }}
-                                        mahasiswa
+                                        {{ ($first->mode ?? 'offline') === 'online' ? 'Link' : 'Lokasi' }}:
+                                        @if (($first->mode ?? 'offline') === 'online' && $first->link_online)
+                                            <a href="{{ $first->link_online }}" target="_blank"
+                                                class="font-semibold text-blue-600 hover:text-blue-700">Buka meeting</a>
+                                        @else
+                                            {{ $first->lokasi ?: '-' }}
+                                        @endif
+                                        • Peserta: {{ $sessionItems->count() }} mahasiswa
                                     </p>
                                 </div>
                                 <span
@@ -218,26 +234,26 @@
 
                             <div class="mt-3 flex gap-2 flex-wrap">
                                 <button
-                                    wire:click="editSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}', {{ $first->id }})"
+                                    wire:click="editSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online), {{ $first->id }})"
                                     class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
                                     Edit Sesi
                                 </button>
                                 @if (($first->status_sesi ?? 'diajukan') !== 'selesai')
                                     <button
-                                        wire:click="ubahStatusSesiSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}','selesai')"
+                                        wire:click="ubahStatusSesiSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online), 'selesai')"
                                         class="rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50">
                                         Tandai Selesai
                                     </button>
                                 @endif
                                 @if (($first->status_sesi ?? 'diajukan') !== 'dibatalkan')
                                     <button
-                                        wire:click="ubahStatusSesiSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}','dibatalkan')"
+                                        wire:click="ubahStatusSesiSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online), 'dibatalkan')"
                                         class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
                                         Batalkan Sesi
                                     </button>
                                 @endif
                                 <button
-                                    wire:click="hapusSession('{{ $first->tanggal }}','{{ $first->jam }}','{{ $first->mode }}','{{ $first->lokasi }}')"
+                                    wire:click="hapusSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online))"
                                     wire:confirm="Hapus semua jadwal pada sesi ini?"
                                     class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
                                     Hapus Sesi

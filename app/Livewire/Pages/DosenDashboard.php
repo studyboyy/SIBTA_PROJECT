@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Pages;
 
-use App\Models\Bimbingans;
 use App\Models\BimbinganLog;
+use App\Models\Bimbingans;
 use App\Models\Mahasiswas;
 use App\Models\Pengajuanjuduls;
 use App\Support\SidangDocumentCatalog;
@@ -39,7 +39,9 @@ class DosenDashboard extends Component
             'rejected' => (clone $pengajuanQuery)->whereIn('status', ['rejected', 'ditolak'])->count(),
         ];
 
-        $bimbinganBaseQuery = BimbinganLog::query()->where('dosen_id', $dosen->id);
+        $bimbinganBaseQuery = BimbinganLog::query()
+            ->where('dosen_id', $dosen->id)
+            ->whereIn('mahasiswa_id', $mahasiswaIds);
         $summary['bimbinganDiajukan'] = (clone $bimbinganBaseQuery)->where('status_sesi', 'diajukan')->count();
         $summary['bimbinganDisetujui'] = (clone $bimbinganBaseQuery)->where('status_sesi', 'disetujui')->count();
         $summary['bimbinganSelesai'] = (clone $bimbinganBaseQuery)->where('status_sesi', 'selesai')->count();
@@ -59,7 +61,7 @@ class DosenDashboard extends Component
         $mahasiswaOverview = Mahasiswas::query()
             ->with([
                 'user',
-                'pengajuanJuduls' => fn($query) => $query->latest(),
+                'pengajuanJuduls' => fn ($query) => $query->latest(),
             ])
             ->whereIn('id', $mahasiswaIds)
             ->get()
@@ -91,6 +93,7 @@ class DosenDashboard extends Component
         $jadwalBimbingan = BimbinganLog::query()
             ->with(['mahasiswa.user'])
             ->where('dosen_id', $dosen->id)
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->whereDate('tanggal', '>=', now()->toDateString())
             ->orderBy('tanggal')
             ->orderBy('id')
@@ -100,7 +103,8 @@ class DosenDashboard extends Component
         $progressMahasiswa = Mahasiswas::query()
             ->with(['user', 'pengajuanSidang', 'dokumenTa'])
             ->withCount([
-                'bimbinganLogs as hadir_bimbingan' => fn($q) => $q
+                'bimbinganLogs as hadir_bimbingan' => fn ($q) => $q
+                    ->where('dosen_id', $dosen->id)
                     ->where('konfirmasi_mahasiswa', 'hadir')
                     ->whereIn('status_sesi', ['disetujui', 'selesai']),
             ])

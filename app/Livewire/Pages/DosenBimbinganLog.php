@@ -4,9 +4,11 @@ namespace App\Livewire\Pages;
 
 use App\Models\BimbinganLog;
 use App\Models\BimbinganMessage;
-use App\Models\BimbinganSessionAudit;
 use App\Models\Bimbingans;
+use App\Models\BimbinganSessionAudit;
+use App\Models\Dosens;
 use App\Models\Mahasiswas;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -15,31 +17,43 @@ use Livewire\WithPagination;
 
 class DosenBimbinganLog extends Component
 {
-    use WithPagination;
     use WithoutUrlPagination;
+    use WithPagination;
 
     #[Title('Penjadwalan Bimbingan')]
 
     // Form fields
-    public string $tanggal     = '';
-    public string $jam         = '';
-    public string $mode        = 'offline';
-    public string $lokasi      = '';
+    public string $tanggal = '';
+
+    public string $jam = '';
+
+    public string $mode = 'offline';
+
+    public string $lokasi = '';
+
     public string $link_online = '';
-    public string $catatan     = '';
+
+    public string $catatan = '';
+
     public int|string $mahasiswa_id = '';
 
     // Edit mode
     public ?int $editId = null;
+
     // Session edit mode
     public ?string $editSessionKey = null;
+
     public array $editSessionAttrs = [];
 
     // Filter
-    public string $search        = '';
+    public string $search = '';
+
     public string $filterMahasiswa = '';
+
     public string $filterStatusSesi = '';
+
     public int $perPage = 10;
+
     public array $catatanRevisi = [];
 
     public function updatedSearch(): void
@@ -64,7 +78,7 @@ class DosenBimbinganLog extends Component
         $this->resetPage();
     }
 
-    private function getDosen(): \App\Models\Dosens
+    private function getDosen(): Dosens
     {
         $dosen = Auth::user()?->dosen;
 
@@ -75,19 +89,43 @@ class DosenBimbinganLog extends Component
         return $dosen;
     }
 
-    private function getMahasiswaIds(\App\Models\Dosens $dosen): \Illuminate\Support\Collection
+    private function getMahasiswaIds(Dosens $dosen): Collection
     {
         return Bimbingans::query()
             ->where('dosen_id', $dosen->id)
             ->pluck('mahasiswa_id');
     }
 
+    private function applySessionPlaceFilter($query, ?string $mode, $lokasi, $linkOnline): void
+    {
+        if ($mode === 'online') {
+            $link = trim((string) ($linkOnline ?? ''));
+
+            $link !== ''
+                ? $query->where('link_online', $link)
+                : $query->whereNull('link_online');
+
+            return;
+        }
+
+        $place = trim((string) ($lokasi ?? ''));
+
+        $place !== ''
+            ? $query->where('lokasi', $place)
+            : $query->whereNull('lokasi');
+    }
+
     private function assertLogOwned(int $logId): BimbinganLog
     {
         $dosen = $this->getDosen();
-        $log   = BimbinganLog::findOrFail($logId);
+        $log = BimbinganLog::findOrFail($logId);
 
-        if ((int) $log->dosen_id !== (int) $dosen->id) {
+        $isActiveAssignment = Bimbingans::query()
+            ->where('mahasiswa_id', $log->mahasiswa_id)
+            ->where('dosen_id', $dosen->id)
+            ->exists();
+
+        if ((int) $log->dosen_id !== (int) $dosen->id || ! $isActiveAssignment) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -109,33 +147,39 @@ class DosenBimbinganLog extends Component
 
     public function simpan(): void
     {
+        $this->resetErrorBag();
+
         $dosen = $this->getDosen();
 
         $this->validate([
-            'tanggal'      => 'required|date',
-            'jam'          => 'nullable|date_format:H:i',
-            'mode'         => 'required|in:online,offline',
-            'lokasi'       => 'nullable|string|max:255',
-            'link_online'  => 'nullable|url|max:255',
-            'catatan'      => 'nullable|string|max:2000',
+            'tanggal' => 'required|date',
+            'jam' => 'nullable|date_format:H:i',
+            'mode' => 'required|in:online,offline',
+            'lokasi' => 'nullable|string|max:255',
+            'link_online' => 'nullable|url|max:255',
+            'catatan' => 'nullable|string|max:2000',
         ]);
 
         if ($this->mode === 'online' && trim($this->link_online) === '') {
             $this->addError('link_online', 'Link meeting wajib diisi untuk bimbingan online.');
+
             return;
         }
 
         if ($this->mode === 'offline' && trim($this->lokasi) === '') {
             $this->addError('lokasi', 'Lokasi wajib diisi untuk bimbingan offline.');
+
             return;
         }
 
         // session-level edit: update all logs that match the session attributes
         if ($this->editSessionKey) {
             $dosen = $this->getDosen();
+            $mahasiswaIds = $this->getMahasiswaIds($dosen);
 
             $query = BimbinganLog::query()
                 ->where('dosen_id', $dosen->id)
+                ->whereIn('mahasiswa_id', $mahasiswaIds)
                 ->where('tanggal', $this->editSessionAttrs['tanggal'] ?? $this->tanggal)
                 ->where('mode', $this->editSessionAttrs['mode'] ?? $this->mode);
 
@@ -145,18 +189,23 @@ class DosenBimbinganLog extends Component
                 $query->whereNull('jam');
             }
 
-            $query->when(isset($this->editSessionAttrs['lokasi']), fn($q) => $q->where('lokasi', $this->editSessionAttrs['lokasi']));
+            $this->applySessionPlaceFilter(
+                $query,
+                $this->editSessionAttrs['mode'] ?? $this->mode,
+                $this->editSessionAttrs['lokasi'] ?? null,
+                $this->editSessionAttrs['link_online'] ?? null,
+            );
 
             $logsToUpdate = $query->get();
 
             foreach ($logsToUpdate as $log) {
                 $log->update([
-                    'tanggal'      => $this->tanggal,
-                    'jam'          => $this->jam !== '' ? $this->jam : null,
-                    'mode'         => $this->mode,
-                    'lokasi'       => $this->mode === 'offline' ? trim($this->lokasi) : null,
-                    'link_online'  => $this->mode === 'online' ? trim($this->link_online) : null,
-                    'catatan'      => $this->catatan,
+                    'tanggal' => $this->tanggal,
+                    'jam' => $this->jam !== '' ? $this->jam : null,
+                    'mode' => $this->mode,
+                    'lokasi' => $this->mode === 'offline' ? trim($this->lokasi) : null,
+                    'link_online' => $this->mode === 'online' ? trim($this->link_online) : null,
+                    'catatan' => $this->catatan,
                 ]);
 
                 $this->tulisAuditStatusSesi($log, $log->status_sesi ?? null, $log->status_sesi ?? 'diajukan', 'manual', 'Jadwal session diperbarui dosen.');
@@ -164,18 +213,19 @@ class DosenBimbinganLog extends Component
 
             session()->flash('success', 'Penjadwalan session bimbingan berhasil diperbarui.');
             $this->resetForm();
+
             return;
         }
 
         if ($this->editId) {
             $log = $this->assertLogOwned($this->editId);
             $log->update([
-                'tanggal'      => $this->tanggal,
-                'jam'          => $this->jam !== '' ? $this->jam : null,
-                'mode'         => $this->mode,
-                'lokasi'       => $this->mode === 'offline' ? trim($this->lokasi) : null,
-                'link_online'  => $this->mode === 'online' ? trim($this->link_online) : null,
-                'catatan'      => $this->catatan,
+                'tanggal' => $this->tanggal,
+                'jam' => $this->jam !== '' ? $this->jam : null,
+                'mode' => $this->mode,
+                'lokasi' => $this->mode === 'offline' ? trim($this->lokasi) : null,
+                'link_online' => $this->mode === 'online' ? trim($this->link_online) : null,
+                'catatan' => $this->catatan,
             ]);
             session()->flash('success', 'Penjadwalan bimbingan berhasil diperbarui.');
         } else {
@@ -183,6 +233,7 @@ class DosenBimbinganLog extends Component
 
             if ($mahasiswaIds->isEmpty()) {
                 session()->flash('error', 'Tidak ada mahasiswa bimbingan yang terkait dengan akun dosen ini.');
+
                 return;
             }
 
@@ -191,14 +242,14 @@ class DosenBimbinganLog extends Component
             foreach ($mahasiswaIds as $mahasiswaId) {
                 $log = BimbinganLog::create([
                     'mahasiswa_id' => $mahasiswaId,
-                    'dosen_id'     => $dosen->id,
-                    'tanggal'      => $this->tanggal,
-                    'jam'          => $this->jam !== '' ? $this->jam : null,
-                    'mode'         => $this->mode,
-                    'lokasi'       => $this->mode === 'offline' ? trim($this->lokasi) : null,
-                    'link_online'  => $this->mode === 'online' ? trim($this->link_online) : null,
-                    'catatan'      => $this->catatan,
-                    'status_sesi'  => 'diajukan',
+                    'dosen_id' => $dosen->id,
+                    'tanggal' => $this->tanggal,
+                    'jam' => $this->jam !== '' ? $this->jam : null,
+                    'mode' => $this->mode,
+                    'lokasi' => $this->mode === 'offline' ? trim($this->lokasi) : null,
+                    'link_online' => $this->mode === 'online' ? trim($this->link_online) : null,
+                    'catatan' => $this->catatan,
+                    'status_sesi' => 'diajukan',
                     'konfirmasi_mahasiswa' => 'pending',
                 ]);
 
@@ -206,7 +257,7 @@ class DosenBimbinganLog extends Component
                 $jumlahDibuat++;
             }
 
-            session()->flash('success', 'Jadwal bimbingan berhasil dibuat untuk ' . $jumlahDibuat . ' mahasiswa.');
+            session()->flash('success', 'Jadwal bimbingan berhasil dibuat untuk '.$jumlahDibuat.' mahasiswa.');
         }
 
         $this->resetForm();
@@ -217,45 +268,58 @@ class DosenBimbinganLog extends Component
         $log = $this->assertLogOwned($id);
 
         // single-log edit (backwards compatible)
-        $this->editId       = $log->id;
+        $this->editId = $log->id;
         $this->editSessionKey = null;
         $this->editSessionAttrs = [];
         $this->mahasiswa_id = $log->mahasiswa_id;
-        $this->tanggal      = $log->tanggal;
-        $this->jam          = $log->jam ?? '';
-        $this->mode         = $log->mode ?? 'offline';
-        $this->lokasi       = $log->lokasi ?? '';
-        $this->link_online  = $log->link_online ?? '';
-        $this->catatan      = $log->catatan ?? '';
+        $this->tanggal = $log->tanggal;
+        $this->jam = $log->jam ?? '';
+        $this->mode = $log->mode ?? 'offline';
+        $this->lokasi = $log->lokasi ?? '';
+        $this->link_online = $log->link_online ?? '';
+        $this->catatan = $log->catatan ?? '';
 
         $this->resetErrorBag();
     }
 
-    public function editSession($tanggal, $jam, $mode, $lokasi, $sampleLogId = null): void
+    public function editSession($tanggal, $jam, $mode, $lokasi, $linkOnline = null, $sampleLogId = null): void
     {
-        $dosen = $this->getDosen();
+        if ($sampleLogId === null && is_numeric($linkOnline)) {
+            $sampleLogId = (int) $linkOnline;
+            $linkOnline = null;
+        }
 
-        $this->editSessionKey = md5(implode('|', [$tanggal ?? '', $jam ?? '', $mode ?? '', $lokasi ?? '']));
+        $dosen = $this->getDosen();
+        $mahasiswaIds = $this->getMahasiswaIds($dosen);
+
+        $this->editSessionKey = md5(implode('|', [$tanggal ?? '', $jam ?? '', $mode ?? '', $lokasi ?? '', $linkOnline ?? '']));
         $this->editSessionAttrs = [
             'tanggal' => $tanggal,
             'jam' => $jam,
             'mode' => $mode,
             'lokasi' => $lokasi,
+            'link_online' => $linkOnline,
         ];
 
         // preload form from sample log if provided
         if ($sampleLogId) {
             $log = BimbinganLog::find($sampleLogId);
-            if ($log && (int) $log->dosen_id === (int) $dosen->id) {
+            if ($log && (int) $log->dosen_id === (int) $dosen->id && $mahasiswaIds->contains((int) $log->mahasiswa_id)) {
                 $this->editId = null;
                 $this->mahasiswa_id = $log->mahasiswa_id;
                 $this->tanggal = $log->tanggal;
                 $this->jam = $log->jam ?? '';
                 $this->mode = $log->mode ?? 'offline';
                 $this->lokasi = $log->lokasi ?? '';
+                $this->link_online = $log->link_online ?? '';
                 $this->catatan = $log->catatan ?? '';
             }
         }
+    }
+
+    public function batal(): void
+    {
+        $this->resetForm();
     }
 
     public function hapus(int $id): void
@@ -289,15 +353,24 @@ class DosenBimbinganLog extends Component
         session()->flash('success', 'Status sesi bimbingan berhasil diperbarui.');
     }
 
-    public function ubahStatusSesiSession($tanggal, $jam, $mode, $lokasi, string $statusSesi): void
+    public function ubahStatusSesiSession($tanggal, $jam, $mode, $lokasi, $linkOnlineOrStatus, ?string $statusSesi = null): void
     {
+        $linkOnline = $linkOnlineOrStatus;
+
+        if ($statusSesi === null) {
+            $statusSesi = (string) $linkOnlineOrStatus;
+            $linkOnline = null;
+        }
+
         if (! in_array($statusSesi, ['diajukan', 'disetujui', 'selesai', 'dibatalkan'], true)) {
             return;
         }
 
         $dosen = $this->getDosen();
+        $mahasiswaIds = $this->getMahasiswaIds($dosen);
         $query = BimbinganLog::query()
             ->where('dosen_id', $dosen->id)
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->where('tanggal', $tanggal)
             ->where('mode', $mode);
 
@@ -307,7 +380,7 @@ class DosenBimbinganLog extends Component
             $query->whereNull('jam');
         }
 
-        $query->when($lokasi !== null && $lokasi !== '', fn($q) => $q->where('lokasi', $lokasi));
+        $this->applySessionPlaceFilter($query, $mode, $lokasi, $linkOnline);
 
         $logs = $query->get();
 
@@ -325,12 +398,14 @@ class DosenBimbinganLog extends Component
         session()->flash('success', 'Status sesi bimbingan berhasil diperbarui untuk session.');
     }
 
-    public function hapusSession($tanggal, $jam, $mode, $lokasi): void
+    public function hapusSession($tanggal, $jam, $mode, $lokasi, $linkOnline = null): void
     {
         $dosen = $this->getDosen();
+        $mahasiswaIds = $this->getMahasiswaIds($dosen);
 
         $query = BimbinganLog::query()
             ->where('dosen_id', $dosen->id)
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->where('tanggal', $tanggal)
             ->where('mode', $mode);
 
@@ -340,7 +415,7 @@ class DosenBimbinganLog extends Component
             $query->whereNull('jam');
         }
 
-        $query->when($lokasi !== null && $lokasi !== '', fn($q) => $q->where('lokasi', $lokasi));
+        $this->applySessionPlaceFilter($query, $mode, $lokasi, $linkOnline);
 
         $ids = $query->pluck('id')->toArray();
 
@@ -356,13 +431,13 @@ class DosenBimbinganLog extends Component
         $log = $this->assertLogOwned($id);
 
         $this->validate([
-            'catatanRevisi.' . $id => 'required|string|max:2000',
+            'catatanRevisi.'.$id => 'required|string|max:2000',
         ]);
 
         $message = trim((string) ($this->catatanRevisi[$id] ?? ''));
 
         if ($message === '') {
-            $this->addError('catatanRevisi.' . $id, 'Catatan revisi tidak boleh kosong.');
+            $this->addError('catatanRevisi.'.$id, 'Catatan revisi tidak boleh kosong.');
 
             return;
         }
@@ -377,27 +452,29 @@ class DosenBimbinganLog extends Component
         ]);
 
         $this->catatanRevisi[$id] = '';
-        $this->resetErrorBag('catatanRevisi.' . $id);
+        $this->resetErrorBag('catatanRevisi.'.$id);
 
         session()->flash('success', 'Catatan revisi berhasil dikirim ke mahasiswa.');
     }
 
     public function resetForm(): void
     {
-        $this->editId       = null;
+        $this->editId = null;
+        $this->editSessionKey = null;
+        $this->editSessionAttrs = [];
         $this->mahasiswa_id = '';
-        $this->tanggal      = '';
-        $this->jam          = '';
-        $this->mode         = 'offline';
-        $this->lokasi       = '';
-        $this->link_online  = '';
-        $this->catatan      = '';
+        $this->tanggal = '';
+        $this->jam = '';
+        $this->mode = 'offline';
+        $this->lokasi = '';
+        $this->link_online = '';
+        $this->catatan = '';
         $this->resetErrorBag();
     }
 
     public function render()
     {
-        $dosen        = $this->getDosen();
+        $dosen = $this->getDosen();
         $mahasiswaIds = $this->getMahasiswaIds($dosen);
 
         $mahasiswas = Mahasiswas::query()
@@ -415,14 +492,15 @@ class DosenBimbinganLog extends Component
                 },
             ])
             ->where('dosen_id', $dosen->id)
-            ->when($this->filterMahasiswa !== '', fn($q) => $q->where('mahasiswa_id', $this->filterMahasiswa))
-            ->when($this->filterStatusSesi !== '', fn($q) => $q->where('status_sesi', $this->filterStatusSesi))
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
+            ->when($this->filterMahasiswa !== '', fn ($q) => $q->where('mahasiswa_id', $this->filterMahasiswa))
+            ->when($this->filterStatusSesi !== '', fn ($q) => $q->where('status_sesi', $this->filterStatusSesi))
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
-                    $sub->where('catatan', 'like', '%' . $this->search . '%')
-                        ->orWhere('catatan_mahasiswa', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('mahasiswa.user', fn($qq) => $qq->where('name', 'like', '%' . $this->search . '%'))
-                        ->orWhereHas('mahasiswa', fn($qq) => $qq->where('nim', 'like', '%' . $this->search . '%'));
+                    $sub->where('catatan', 'like', '%'.$this->search.'%')
+                        ->orWhere('catatan_mahasiswa', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('mahasiswa.user', fn ($qq) => $qq->where('name', 'like', '%'.$this->search.'%'))
+                        ->orWhereHas('mahasiswa', fn ($qq) => $qq->where('nim', 'like', '%'.$this->search.'%'));
                 });
             })
             ->orderByDesc('tanggal')
@@ -453,8 +531,8 @@ class DosenBimbinganLog extends Component
 
         return view('livewire.pages.dosen-bimbingan-log', [
             'mahasiswas' => $mahasiswas,
-            'logs'       => $logs,
-            'dosen'      => $dosen,
+            'logs' => $logs,
+            'dosen' => $dosen,
             'progressByMahasiswa' => $progressByMahasiswa,
         ]);
     }

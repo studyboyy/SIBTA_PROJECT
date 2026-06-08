@@ -33,6 +33,21 @@ class UserFactory extends Factory
         ];
     }
 
+    public function indonesian(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => fake('id_ID')->name(),
+            'email' => fake('id_ID')->unique()->safeEmail(),
+        ]);
+    }
+
+    public function withPassword(string $password): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make($password),
+        ]);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

@@ -126,7 +126,8 @@
                 $sudahPunyaJadwal    = ! $checklist['belum_dijadwalkan'];
                 $dokumenLengkap      = $checklist['proposal'] && $checklist['skripsi'];
                 $pengajuanApproved   = ($pengajuan?->status === 'approved');
-                $bolehAjukan         = $dokumenLengkap && ! $sudahPunyaJadwal && ! $pengajuanApproved;
+                $pengajuanSedangDiproses = $pengajuan && ! $pengajuanApproved && ! $canResubmit;
+                $bolehAjukan         = $dokumenLengkap && ! $sudahPunyaJadwal && ! $pengajuanApproved && ! $pengajuanSedangDiproses;
             @endphp
 
             @if ($sudahPunyaJadwal)
@@ -136,6 +137,10 @@
             @elseif ($pengajuanApproved)
                 <div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                     Pengajuan sidang Anda sudah disetujui. Admin sedang memproses penjadwalan.
+                </div>
+            @elseif ($pengajuanSedangDiproses)
+                <div class="mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    Pengajuan sidang sedang diproses. Tunggu keputusan dosen, kaprodi, atau admin sebelum mengirim ulang.
                 </div>
             @elseif ($bolehAjukan)
                 <form wire:submit.prevent="submit" class="mt-5 space-y-4">

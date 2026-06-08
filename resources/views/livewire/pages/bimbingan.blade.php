@@ -74,11 +74,6 @@
                                             <div class="min-w-0 flex-1">
                                                 <p class="truncate text-sm font-medium text-slate-800">{{ $mhs->user->name }}</p>
                                                 <p class="font-mono text-xs text-slate-400">{{ $mhs->nim }}</p>
-                                                @if ($mhs->calon_dosen_name)
-                                                    <p class="mt-0.5 text-xs text-indigo-600">
-                                                        Calon: {{ $mhs->calon_dosen_name }}
-                                                    </p>
-                                                @endif
                                             </div>
                                         </label>
                                     @endforeach
@@ -114,21 +109,6 @@
                                 </option>
                             @endforeach
                         </select>
-
-                        @php
-                            $selectedMahasiswaWithCalon = $mahasiswas->whereIn('id', $mahasiswa_ids)->filter(fn($m) => $m->calon_dosen_name);
-                        @endphp
-                        @if ($selectedMahasiswaWithCalon->isNotEmpty())
-                            <div class="mt-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-xs text-indigo-700">
-                                <p class="font-semibold">Rekomendasi dari pengajuan judul:</p>
-                                <div class="mt-1 space-y-0.5">
-                                    @foreach ($selectedMahasiswaWithCalon as $mhs)
-                                        <p>• {{ $mhs->user->name }}: <span class="font-medium">{{ $mhs->calon_dosen_name }}</span></p>
-                                    @endforeach
-                                </div>
-                                <p class="mt-1.5 text-indigo-500">Anda bisa mengikuti rekomendasi ini atau memilih dosen lain.</p>
-                            </div>
-                        @endif
 
                         @error('dosen_id')
                             <x-ui.validation-error :message="$message" />

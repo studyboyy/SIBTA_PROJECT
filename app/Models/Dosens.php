@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['photo', 'user_id', 'kuota_bimbingan', 'jabatan', 'nidn', 'phone'])]
 class Dosens extends Model
 {
+    use HasFactory;
+
     public function user()
     {
         return $this->belongsTo(User::class);

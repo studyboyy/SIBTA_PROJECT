@@ -198,8 +198,6 @@ class KaprodiReportSummary
 
     private function isCompletedSidangStatus(?string $status): bool
     {
-        $normalized = strtolower(trim((string) $status));
-
-        return in_array($normalized, ['approved', 'disetujui', 'selesai', 'lulus'], true);
+        return Sidangs::isCompletedStatus($status);
     }
 }

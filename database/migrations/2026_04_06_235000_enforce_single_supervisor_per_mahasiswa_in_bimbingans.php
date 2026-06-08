@@ -13,11 +13,16 @@ return new class extends Migration
     public function up(): void
     {
         // Keep the earliest assignment for each mahasiswa before adding unique constraint.
-        DB::statement(
-            'DELETE b1 FROM bimbingans b1 '
-                . 'INNER JOIN bimbingans b2 '
-                . 'ON b1.mahasiswa_id = b2.mahasiswa_id AND b1.id > b2.id'
-        );
+        $duplicateIds = DB::table('bimbingans as current')
+            ->join('bimbingans as earlier', function ($join) {
+                $join->on('current.mahasiswa_id', '=', 'earlier.mahasiswa_id')
+                    ->on('current.id', '>', 'earlier.id');
+            })
+            ->pluck('current.id');
+
+        if ($duplicateIds->isNotEmpty()) {
+            DB::table('bimbingans')->whereIn('id', $duplicateIds)->delete();
+        }
 
         Schema::table('bimbingans', function (Blueprint $table) {
             $table->unique('mahasiswa_id', 'bimbingans_mahasiswa_id_unique');

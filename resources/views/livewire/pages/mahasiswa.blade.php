@@ -214,18 +214,6 @@
                     @error('prodi_id') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
-                <div>
-                    <label for="status_ta" class="block text-sm font-medium text-slate-700">Status Tugas Akhir</label>
-                    <select id="status_ta" wire:model.defer="status_ta"
-                        class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                        <option value="">Pilih status TA</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Proses">Proses</option>
-                        <option value="Selesai">Selesai</option>
-                    </select>
-                    @error('status_ta') <x-ui.validation-error :message="$message" /> @enderror
-                </div>
-
                 <div class="sm:col-span-2 border-t border-slate-100 pt-4 flex justify-end gap-3">
                     <button type="button" wire:click="closeModal"
                         class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">

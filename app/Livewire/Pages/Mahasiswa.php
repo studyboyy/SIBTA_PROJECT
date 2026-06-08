@@ -16,12 +16,34 @@ class Mahasiswa extends Component
 {
     use WithPagination;
 
-    public $name, $email, $nim, $prodi, $prodi_id, $angkatan, $status_ta, $editId = null, $deleteId = null;
+    public $name;
+
+    public $email;
+
+    public $nim;
+
+    public $prodi;
+
+    public $prodi_id;
+
+    public $angkatan;
+
+    public $status_ta;
+
+    public $editId = null;
+
+    public $deleteId = null;
+
     public ?int $resetId = null;
+
     public ?string $resetEmail = null;
+
     public $selectedIds = [];
+
     public $selectPage = false;
+
     public $search = '';
+
     public int $perPage = 5;
 
     #[Title('Data Mahasiswa')]
@@ -32,11 +54,10 @@ class Mahasiswa extends Component
 
             return [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:users,email,' . $mahasiswa->user->id,
-                'nim' => 'required|string|max:255|unique:mahasiswas,nim,' . $mahasiswa->id,
+                'email' => 'required|email|max:255|unique:users,email,'.$mahasiswa->user->id,
+                'nim' => 'required|string|max:255|unique:mahasiswas,nim,'.$mahasiswa->id,
                 'prodi_id' => 'required|exists:prodis,id',
                 'angkatan' => 'required|string|max:10',
-                'status_ta' => 'required|string|in:Pending,Proses,Selesai',
             ];
         }
 
@@ -46,7 +67,6 @@ class Mahasiswa extends Component
             'email' => 'required|string|email|max:255|unique:users,email',
             'angkatan' => 'required|string|max:10',
             'prodi_id' => 'required|exists:prodis,id',
-            'status_ta' => 'required|string|in:Pending,Proses,Selesai',
         ];
     }
 
@@ -62,8 +82,8 @@ class Mahasiswa extends Component
                 'prodi' => $prodi->name,
                 'prodi_id' => $prodi->id,
                 'angkatan' => $this->angkatan,
-                'status_ta' => $this->status_ta,
             ]);
+            $mahasiswa->syncStatusTa();
 
             $mahasiswa->user->update([
                 'name' => $this->name,
@@ -95,7 +115,7 @@ class Mahasiswa extends Component
                 'prodi' => $prodi->name,
                 'prodi_id' => $prodi->id,
                 'photo' => null,
-                'status_ta' => $this->status_ta,
+                'status_ta' => Mahasiswas::STATUS_TA_PENDING,
             ]);
         });
 
@@ -163,7 +183,7 @@ class Mahasiswa extends Component
         ]);
 
         $this->dispatch('close-modal', name: 'reset-mahasiswa-password');
-        $this->dispatch('notify', message: 'Password baru untuk ' . ($this->resetEmail ?? '-') . ': ' . $newPassword);
+        $this->dispatch('notify', message: 'Password baru untuk '.($this->resetEmail ?? '-').': '.$newPassword);
 
         $this->reset(['resetId', 'resetEmail']);
     }
@@ -175,7 +195,7 @@ class Mahasiswa extends Component
                 ->latest()
                 ->paginate($this->perPage)
                 ->pluck('id')
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->toArray();
 
             return;
@@ -203,14 +223,14 @@ class Mahasiswa extends Component
     protected function getMahasiswaQuery()
     {
         return Mahasiswas::query()
-            ->with('user')
+            ->with(['user', 'bimbingans', 'sidang', 'pengajuanSidang'])
             ->when($this->search, function ($query) {
                 $search = trim($this->search);
 
                 $query->where(function ($q) use ($search) {
                     $q->where('nim', 'like', "%{$search}%")
                         ->orWhere('prodi', 'like', "%{$search}%")
-                        ->orWhereHas('user', fn($userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
                 });
             });
     }
@@ -219,11 +239,12 @@ class Mahasiswa extends Component
     {
         if (empty($this->selectedIds)) {
             $this->dispatch('notify', message: 'Pilih data mahasiswa terlebih dahulu.');
+
             return;
         }
 
         $ids = collect($this->selectedIds)
-            ->map(fn($id) => (int) $id)
+            ->map(fn ($id) => (int) $id)
             ->filter()
             ->unique()
             ->values();
@@ -260,6 +281,8 @@ class Mahasiswa extends Component
         $mahasiswaList = $this->getMahasiswaQuery()
             ->latest()
             ->paginate($this->perPage);
+
+        $mahasiswaList->getCollection()->each->syncStatusTa();
 
         return view('livewire.pages.mahasiswa', [
             'mahasiswaList' => $mahasiswaList,

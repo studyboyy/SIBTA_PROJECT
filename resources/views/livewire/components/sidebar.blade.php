@@ -178,6 +178,60 @@
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 px-3 mt-4 mb-1">Dosen</p>
 
                         <li>
+                            <a href="{{ route('dosen.monitoring-mahasiswa') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('dosen.monitoring-mahasiswa') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                                <span>Monitoring Mahasiswa</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('dosen.review-dokumen') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('dosen.review-dokumen') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H6.75A2.25 2.25 0 0 0 4.5 4.5v15A2.25 2.25 0 0 0 6.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25V14.25Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 12h7.5m-7.5 3h4.5" />
+                                </svg>
+                                <span>Review Dokumen</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('dosen.kelayakan-sidang') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('dosen.kelayakan-sidang') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12.75 11.25 15 15 9.75m6 2.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <span>Kelayakan Sidang</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('dosen.mahasiswa-perlu-tindakan') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('dosen.mahasiswa-perlu-tindakan') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v3.75m0 3.75h.008v.008H12V16.5Zm9-4.5a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <span>Perlu Tindakan</span>
+                            </a>
+                        </li>
+
+                        <li>
                             <a href="{{ route('dosen.pengajuan-judul') }}" wire:navigate
                                 class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
                                        {{ request()->routeIs('dosen.pengajuan-judul') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
@@ -235,6 +289,45 @@
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 px-3 mt-4 mb-1">Kaprodi</p>
 
                         <li>
+                            <a href="{{ route('kaprodi.monitoring-mahasiswa') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('kaprodi.monitoring-mahasiswa') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                                <span>Monitoring Mahasiswa</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('kaprodi.beban-dosen') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('kaprodi.beban-dosen') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 13.5h18M5.25 6.75h13.5A2.25 2.25 0 0 1 21 9v10.5a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 19.5V9a2.25 2.25 0 0 1 2.25-2.25Zm3-3h7.5A2.25 2.25 0 0 1 18 6.75H6a2.25 2.25 0 0 1 2.25-3Z" />
+                                </svg>
+                                <span>Beban Dosen</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('kaprodi.mahasiswa-perhatian') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('kaprodi.mahasiswa-perhatian') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v3.75m0 3.75h.008v.008H12V16.5Zm9-4.5a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <span>Perlu Perhatian</span>
+                            </a>
+                        </li>
+
+                        <li>
                             <a href="{{ route('kaprodi.approval-sidang') }}" wire:navigate
                                 class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
                                        {{ request()->routeIs('kaprodi.approval-sidang') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
@@ -256,7 +349,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                 </svg>
-                                <span>Pengajuan Judul &amp; Pembimbing</span>
+                                <span>Pengajuan Dosen</span>
                             </a>
                         </li>
 
@@ -279,6 +372,19 @@
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 px-3 mt-4 mb-1">Mahasiswa</p>
 
                         <li>
+                            <a href="{{ route('mahasiswa.timeline-ta') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('mahasiswa.timeline-ta') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 6v6l4 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <span>Timeline TA</span>
+                            </a>
+                        </li>
+
+                        <li>
                             <a href="{{ route('mahasiswa.pengajuan-judul') }}" wire:navigate
                                 class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
                                        {{ request()->routeIs('mahasiswa.pengajuan-judul') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
@@ -287,7 +393,21 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931ZM19.5 7.125 16.875 4.5" />
                                 </svg>
-                                <span>Pengajuan Judul</span>
+                                <span>Form Pengajuan</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('mahasiswa.checklist-sidang') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('mahasiswa.checklist-sidang') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <span>Checklist Sidang</span>
+                                <x-ui.lock-indicator :show="$showMahasiswaLock" :message="$mahasiswaLockInfo" />
                             </a>
                         </li>
 
@@ -317,6 +437,34 @@
                                         d="M8.25 12h7.5m-7.5 3h4.5" />
                                 </svg>
                                 <span>Dokumen Saya</span>
+                                <x-ui.lock-indicator :show="$showMahasiswaLock" :message="$mahasiswaLockInfo" />
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('mahasiswa.revisi-saya') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('mahasiswa.revisi-saya') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.75 19.2 3 21l1.8-3.75L16.862 4.487ZM19.5 7.125 16.875 4.5" />
+                                </svg>
+                                <span>Revisi Saya</span>
+                                <x-ui.lock-indicator :show="$showMahasiswaLock" :message="$mahasiswaLockInfo" />
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('mahasiswa.jadwal-saya') }}" wire:navigate
+                                class="group flex items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors
+                                       {{ request()->routeIs('mahasiswa.jadwal-saya') ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-5 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 6.75h15A1.5 1.5 0 0 1 21 8.25v12A1.5 1.5 0 0 1 19.5 21h-15A1.5 1.5 0 0 1 3 19.5v-12A1.5 1.5 0 0 1 4.5 6.75Z" />
+                                </svg>
+                                <span>Jadwal Saya</span>
                                 <x-ui.lock-indicator :show="$showMahasiswaLock" :message="$mahasiswaLockInfo" />
                             </a>
                         </li>

@@ -6,6 +6,7 @@ use App\Models\Bimbingans;
 use App\Models\DokumenTa;
 use App\Models\DokumenTaVersion;
 use App\Models\PengajuanSidang;
+use App\Support\SidangDocumentCatalog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -217,9 +218,20 @@ class DosenKontrolBimbingan extends Component
         $mahasiswaIds = $this->getMahasiswaIdsForDosen($dosen->id);
 
         $pengajuan = PengajuanSidang::query()
+            ->with('mahasiswa.dokumenTa')
             ->whereKey($pengajuanId)
             ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->firstOrFail();
+
+        if ($status === 'approved') {
+            $checklist = SidangDocumentCatalog::checklist($pengajuan->mahasiswa?->dokumenTa ?? collect());
+
+            if (count(array_filter($checklist)) < count(SidangDocumentCatalog::requiredTypes())) {
+                session()->flash('error', 'Kelayakan sidang belum dapat di-ACC karena dokumen wajib belum lengkap.');
+
+                return;
+            }
+        }
 
         // Jika sudah approved dan sudah diproses kaprodi/admin, tidak boleh diubah
         if ($pengajuan->status_dosen === 'approved' && $pengajuan->status_kaprodi === 'approved') {
