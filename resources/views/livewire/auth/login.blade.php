@@ -36,13 +36,13 @@
                     <h2 class="mt-5 text-center text-2xl font-semibold text-slate-900">Masuk ke SIBTA</h2>
                     <p class="mt-1 text-center text-sm text-slate-500">Gunakan akunmu untuk melanjutkan aktivitas.</p>
 
-                    <form wire:submit.prevent="login" class="mt-7 space-y-5">
+                    <form wire:submit.prevent="login" novalidate class="mt-7 space-y-5">
                         @csrf
 
                         <div>
                             <label for="email_nim" class="block text-sm font-medium text-slate-700">Email, NIM, atau
                                 NIDN</label>
-                            <input id="email_nim" type="text" wire:model.defer="email_nim" required
+                            <input id="email_nim" type="text" wire:model.defer="email_nim"
                                 autocomplete="username" placeholder="nama@email.com atau NIM/NIDN"
                                 class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" />
                             @error('email_nim')
@@ -54,7 +54,7 @@
                             <label for="password" class="block text-sm font-medium text-slate-700">Kata Sandi</label>
                             <div class="relative mt-1">
                                 <input id="password" x-bind:type="showPassword ? 'text' : 'password'"
-                                    wire:model.defer="password" required autocomplete="current-password"
+                                    wire:model.defer="password" autocomplete="current-password"
                                     placeholder="Masukkan kata sandi"
                                     class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" />
 

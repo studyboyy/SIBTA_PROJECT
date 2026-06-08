@@ -17,7 +17,7 @@
                 <p class="text-sm text-slate-500">Nama dan email ini dipakai sebagai identitas login admin.</p>
             </div>
 
-            <form wire:submit="saveProfile" class="mt-6 space-y-5">
+            <form wire:submit="saveProfile" novalidate class="mt-6 space-y-5">
                 <div>
                     <label for="admin_photo" class="block text-sm font-medium text-slate-700">Foto profil</label>
                     <div class="mt-3 flex items-center gap-4">
@@ -43,7 +43,7 @@
 
                 <div>
                     <label for="admin_name" class="block text-sm font-medium text-slate-700">Nama lengkap</label>
-                    <input id="admin_name" type="text" wire:model="name"
+                    <input id="admin_name" type="text" wire:model="name" placeholder="Nama lengkap admin"
                         class="mt-2 block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('name')
                         <x-ui.validation-error :message="$message" />
@@ -52,7 +52,7 @@
 
                 <div>
                     <label for="admin_email" class="block text-sm font-medium text-slate-700">Email</label>
-                    <input id="admin_email" type="email" wire:model="email"
+                    <input id="admin_email" type="email" wire:model="email" placeholder="admin@email.com"
                         class="mt-2 block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('email')
                         <x-ui.validation-error :message="$message" />
@@ -74,11 +74,11 @@
                 <p class="text-sm text-slate-500">Gunakan password yang kuat untuk membatasi akses admin.</p>
             </div>
 
-            <form wire:submit="updatePassword" class="mt-6 space-y-5">
+            <form wire:submit="updatePassword" novalidate class="mt-6 space-y-5">
                 <div>
                     <label for="current_password" class="block text-sm font-medium text-slate-700">Password saat
                         ini</label>
-                    <input id="current_password" type="password" wire:model="current_password"
+                    <input id="current_password" type="password" wire:model="current_password" placeholder="Password saat ini"
                         class="mt-2 block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('current_password')
                         <x-ui.validation-error :message="$message" />
@@ -87,7 +87,7 @@
 
                 <div>
                     <label for="password" class="block text-sm font-medium text-slate-700">Password baru</label>
-                    <input id="password" type="password" wire:model="password"
+                    <input id="password" type="password" wire:model="password" placeholder="Password baru"
                         class="mt-2 block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('password')
                         <x-ui.validation-error :message="$message" />
@@ -97,7 +97,7 @@
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-slate-700">Konfirmasi
                         password baru</label>
-                    <input id="password_confirmation" type="password" wire:model="password_confirmation"
+                    <input id="password_confirmation" type="password" wire:model="password_confirmation" placeholder="Ulangi password baru"
                         class="mt-2 block w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                 </div>
 

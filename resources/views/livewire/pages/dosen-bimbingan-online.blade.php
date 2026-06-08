@@ -86,7 +86,7 @@
                 {{ $messages->links('vendor.pagination.tailwind') }}
             </div>
 
-            <form wire:submit.prevent="kirim" class="mt-5 space-y-3 border-t border-slate-200 pt-4">
+            <form wire:submit.prevent="kirim" novalidate class="mt-5 space-y-3 border-t border-slate-200 pt-4">
                 <input type="hidden" wire:model="selected_mahasiswa_id" />
 
                 <div>

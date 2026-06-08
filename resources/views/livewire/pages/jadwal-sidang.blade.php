@@ -62,7 +62,7 @@
                     </span>
                 </div>
 
-                <form wire:submit.prevent="simpan" class="mt-5 space-y-4">
+                <form wire:submit.prevent="simpan" novalidate class="mt-5 space-y-4">
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Gelombang</label>
                         <input type="number" min="1" wire:model="gelombang"
@@ -76,6 +76,7 @@
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Kuota Mahasiswa</label>
                         <input type="number" min="1" wire:model="kuotaPerGelombang"
+                            placeholder="Contoh: 20"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                         @error('kuotaPerGelombang')
                             <x-ui.validation-error :message="$message" />
@@ -212,8 +213,7 @@
                                         </span>
                                         <button wire:click="edit({{ $batch->id }})"
                                             class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100">Edit</button>
-                                        <button wire:click="hapusBatch({{ $batch->id }})"
-                                            wire:confirm="Hapus batch gelombang {{ $batch->gelombang }}?"
+                                        <button wire:click="openConfirm('hapusBatch', {{ $batch->id }})"
                                             class="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">Hapus</button>
                                     </div>
                                 </div>
@@ -283,8 +283,7 @@
                                                                         Tidak Lulus
                                                                     </button>
                                                                 @endif
-                                                                <button type="button" wire:click="hapusSidang({{ $sidang->id }})"
-                                                                    wire:confirm="Hapus jadwal sidang mahasiswa ini?"
+                                                                <button type="button" wire:click="openConfirm('hapusSidang', {{ $sidang->id }})"
                                                                     class="rounded-lg border border-slate-200 px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50">
                                                                     Hapus
                                                                 </button>
@@ -394,13 +393,11 @@
                                 </div>
                             @else
                                 <div class="mt-3 flex flex-wrap gap-2">
-                                    <button wire:click="approvePengajuan({{ $pengajuan->id }})"
-                                        wire:confirm="Setujui pengajuan ini? Mahasiswa akan otomatis dijadwalkan ke batch tersedia."
+                                    <button wire:click="openConfirm('approvePengajuan', {{ $pengajuan->id }})"
                                         class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">
                                         Approve & Jadwalkan
                                     </button>
-                                    <button wire:click="rejectPengajuan({{ $pengajuan->id }})"
-                                        wire:confirm="Tolak pengajuan ini?"
+                                    <button wire:click="openConfirm('rejectPengajuan', {{ $pengajuan->id }})"
                                         class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700">
                                         Reject
                                     </button>
@@ -515,4 +512,33 @@
             </div>
         @endif
     </section>
+
+    <livewire:components.modal name="confirm-jadwal-sidang">
+        <div class="w-full">
+            @php
+                $isBlueConfirm = $confirmTone === 'blue';
+            @endphp
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full {{ $isBlueConfirm ? 'bg-blue-100' : 'bg-rose-100' }}">
+                    <svg class="size-5 {{ $isBlueConfirm ? 'text-blue-600' : 'text-rose-600' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $isBlueConfirm ? 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' : 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' }}" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">{{ $confirmTitle ?: 'Konfirmasi Aksi' }}</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">{{ $confirmMessage ?: 'Lanjutkan aksi ini?' }}</p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" wire:click="$dispatch('close-modal', {name: 'confirm-jadwal-sidang'})"
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button" wire:click="runConfirm"
+                    class="rounded-xl px-4 py-2 text-sm font-semibold text-white {{ $isBlueConfirm ? 'bg-blue-600 hover:bg-blue-700' : 'bg-rose-600 hover:bg-rose-700' }}">
+                    {{ $confirmButton ?: 'Ya, Lanjutkan' }}
+                </button>
+            </div>
+        </div>
+    </livewire:components.modal>
 </div>

@@ -31,6 +31,37 @@ class RedirectIfRoleMismatch
             }
         }
 
-        return redirect()->back();
+        $homeRoute = $this->homeRouteFor($user);
+
+        if (! $homeRoute) {
+            abort(403, 'Role akun belum didukung.');
+        }
+
+        if ($request->routeIs($homeRoute)) {
+            abort(403, 'Akses ditolak untuk role akun ini.');
+        }
+
+        return redirect()->route($homeRoute);
+    }
+
+    private function homeRouteFor($user): ?string
+    {
+        if ($user->hasRole('admin')) {
+            return 'dashboard';
+        }
+
+        if ($user->hasRole('dosen')) {
+            return 'dosen.dashboard';
+        }
+
+        if ($user->hasRole('mahasiswa')) {
+            return 'mahasiswa.dashboard';
+        }
+
+        if ($user->hasRole('kaprodi') || $user->hasRole('pimpinan')) {
+            return 'kaprodi.dashboard';
+        }
+
+        return null;
     }
 }

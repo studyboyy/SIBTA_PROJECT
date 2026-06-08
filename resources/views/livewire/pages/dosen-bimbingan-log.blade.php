@@ -253,8 +253,7 @@
                                     </button>
                                 @endif
                                 <button
-                                    wire:click="hapusSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online))"
-                                    wire:confirm="Hapus semua jadwal pada sesi ini?"
+                                    wire:click="confirmHapusSession(@js($first->tanggal), @js($first->jam), @js($first->mode), @js($first->lokasi), @js($first->link_online))"
                                     class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">
                                     Hapus Sesi
                                 </button>
@@ -363,4 +362,32 @@
             </div>
         </section>
     </div>
+
+    <livewire:components.modal name="delete-bimbingan-session">
+        <div class="w-full">
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                    <svg class="size-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">Hapus Sesi Bimbingan</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">
+                        Semua jadwal pada sesi {{ $pendingDeleteSession['tanggal'] ?? '-' }} {{ $pendingDeleteSession['jam'] ?? '' }} akan dihapus.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" wire:click="$dispatch('close-modal', {name: 'delete-bimbingan-session'})"
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button" wire:click="hapusSessionConfirmed"
+                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </livewire:components.modal>
 </div>

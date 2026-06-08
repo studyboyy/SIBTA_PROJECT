@@ -33,8 +33,8 @@ class Dosen extends Component
             return [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email,' . $dosen->user->id,
-                'nidn' => 'required|string|max:255|unique:dosens,nidn,' . $dosen->id,
-                'phone' => 'required|string|max:20|unique:dosens,phone,' . $dosen->id,
+                'nidn' => 'required|string|max:30|regex:/^[0-9]+$/|unique:dosens,nidn,' . $dosen->id,
+                'phone' => 'required|string|max:20|regex:/^[0-9]+$/|unique:dosens,phone,' . $dosen->id,
                 'jabatan' => 'required|string|max:255',
                 'kuota_bimbingan' => 'required|integer|min:0|max:200',
             ];
@@ -43,10 +43,18 @@ class Dosen extends Component
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'nidn' => 'required|string|max:255|unique:dosens,nidn',
-            'phone' => 'required|string|max:20|unique:dosens,phone',
+            'nidn' => 'required|string|max:30|regex:/^[0-9]+$/|unique:dosens,nidn',
+            'phone' => 'required|string|max:20|regex:/^[0-9]+$/|unique:dosens,phone',
             'jabatan' => 'required|string|max:255',
             'kuota_bimbingan' => 'required|integer|min:0|max:200',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'nidn.regex' => 'NIDN hanya boleh berisi angka.',
+            'phone.regex' => 'No. WhatsApp hanya boleh berisi angka.',
         ];
     }
 
@@ -246,7 +254,18 @@ class Dosen extends Component
         $this->selectedIds = [];
         $this->selectPage = false;
         $this->resetPage();
+        $this->dispatch('close-modal', name: 'delete-selected-dosen');
         $this->dispatch('notify', message: 'Data dosen terpilih berhasil dihapus.');
+    }
+
+    public function confirmDeleteSelected(): void
+    {
+        if (empty($this->selectedIds)) {
+            $this->dispatch('notify', message: 'Pilih data dosen terlebih dahulu.');
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'delete-selected-dosen');
     }
 
     public function closeModal()

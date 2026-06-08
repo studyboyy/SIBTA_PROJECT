@@ -22,6 +22,10 @@ class Bimbingan extends Component
 
     public int $perPage = 5;
 
+    public ?int $deleteId = null;
+
+    public string $deleteName = '';
+
     protected string $paginationTheme = 'tailwind';
 
     public function updatedSearch(): void
@@ -95,6 +99,30 @@ class Bimbingan extends Component
     {
         Bimbingans::findOrFail($id)->delete();
         session()->flash('success', 'Penugasan berhasil dihapus.');
+    }
+
+    public function confirmHapus(int $id): void
+    {
+        $bimbingan = Bimbingans::query()
+            ->with(['mahasiswa.user', 'dosen.user'])
+            ->findOrFail($id);
+
+        $this->deleteId = $bimbingan->id;
+        $this->deleteName = ($bimbingan->mahasiswa?->user?->name ?? 'Mahasiswa').' - '.($bimbingan->dosen?->user?->name ?? 'Dosen');
+
+        $this->dispatch('open-modal', name: 'delete-bimbingan');
+    }
+
+    public function hapusConfirmed(): void
+    {
+        if (! $this->deleteId) {
+            return;
+        }
+
+        $this->hapus($this->deleteId);
+
+        $this->dispatch('close-modal', name: 'delete-bimbingan');
+        $this->reset(['deleteId', 'deleteName']);
     }
 
     public function render()

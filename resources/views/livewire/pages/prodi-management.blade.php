@@ -93,10 +93,10 @@
         <div class="w-full">
             <h3 class="text-center text-lg font-semibold text-slate-900">
                 {{ $editId ? 'Edit Program Studi' : 'Tambah Program Studi' }}</h3>
-            <form wire:submit.prevent="store" class="mt-5 grid grid-cols-1 gap-4">
+            <form wire:submit.prevent="store" novalidate class="mt-5 grid grid-cols-1 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Nama Prodi</label>
-                    <input type="text" wire:model.defer="name"
+                    <input type="text" wire:model.defer="name" placeholder="Contoh: Teknik Informatika"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
                     @error('name')
                         <x-ui.validation-error :message="$message" />
@@ -104,7 +104,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Kode</label>
-                    <input type="text" wire:model.defer="code"
+                    <input type="text" wire:model.defer="code" placeholder="Contoh: TI"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm uppercase text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
                     @error('code')
                         <x-ui.validation-error :message="$message" />

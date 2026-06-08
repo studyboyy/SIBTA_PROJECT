@@ -23,11 +23,12 @@ class Register extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'nim' => 'required|string|max:255|unique:mahasiswas',
+            'nim' => 'required|string|max:30|regex:/^[0-9]+$/|unique:mahasiswas,nim',
             'email' => 'required|string|email|max:255|unique:users',
-            'angkatan' => 'required|string',
+            'angkatan' => 'required|digits:4',
             'prodi' => 'required|string|max:255',
             'password' => 'required|string|min:8|confirmed',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
 

@@ -55,18 +55,26 @@ class Mahasiswa extends Component
             return [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email,'.$mahasiswa->user->id,
-                'nim' => 'required|string|max:255|unique:mahasiswas,nim,'.$mahasiswa->id,
+                'nim' => 'required|string|max:30|regex:/^[0-9]+$/|unique:mahasiswas,nim,'.$mahasiswa->id,
                 'prodi_id' => 'required|exists:prodis,id',
-                'angkatan' => 'required|string|max:10',
+                'angkatan' => 'required|digits:4',
             ];
         }
 
         return [
             'name' => 'required|string|max:255',
-            'nim' => 'required|string|max:255|unique:mahasiswas,nim',
+            'nim' => 'required|string|max:30|regex:/^[0-9]+$/|unique:mahasiswas,nim',
             'email' => 'required|string|email|max:255|unique:users,email',
-            'angkatan' => 'required|string|max:10',
+            'angkatan' => 'required|digits:4',
             'prodi_id' => 'required|exists:prodis,id',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'nim.regex' => 'NIM hanya boleh berisi angka.',
+            'angkatan.digits' => 'Angkatan harus 4 digit angka, contoh: 2023.',
         ];
     }
 
@@ -265,7 +273,19 @@ class Mahasiswa extends Component
         $this->selectedIds = [];
         $this->selectPage = false;
         $this->resetPage();
+        $this->dispatch('close-modal', name: 'delete-selected-mahasiswa');
         $this->dispatch('notify', message: 'Data mahasiswa terpilih berhasil dihapus.');
+    }
+
+    public function confirmDeleteSelected(): void
+    {
+        if (empty($this->selectedIds)) {
+            $this->dispatch('notify', message: 'Pilih data mahasiswa terlebih dahulu.');
+
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'delete-selected-mahasiswa');
     }
 
     public function closeModal()

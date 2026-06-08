@@ -49,6 +49,18 @@ class JadwalSidang extends Component
 
     public string $activeTab = 'jadwal';
 
+    public string $confirmAction = '';
+
+    public ?int $confirmId = null;
+
+    public string $confirmTitle = '';
+
+    public string $confirmMessage = '';
+
+    public string $confirmButton = 'Ya, Lanjutkan';
+
+    public string $confirmTone = 'rose';
+
     public int $sidangPerPage = 15;
 
     public int $pengajuanPerPage = 10;
@@ -290,6 +302,80 @@ class JadwalSidang extends Component
         ]);
 
         session()->flash('success', 'Pengajuan sidang ditolak.');
+    }
+
+    public function openConfirm(string $action, int $id): void
+    {
+        $config = match ($action) {
+            'hapusBatch' => [
+                'title' => 'Hapus Batch Jadwal',
+                'message' => 'Batch jadwal ini akan dihapus dari daftar. Pastikan tidak ada jadwal sidang penting yang masih perlu dipertahankan.',
+                'button' => 'Ya, Hapus',
+                'tone' => 'rose',
+            ],
+            'hapusSidang' => [
+                'title' => 'Hapus Jadwal Sidang',
+                'message' => 'Jadwal sidang mahasiswa ini akan dihapus dari batch.',
+                'button' => 'Ya, Hapus',
+                'tone' => 'rose',
+            ],
+            'approvePengajuan' => [
+                'title' => 'Approve Pengajuan Sidang',
+                'message' => 'Mahasiswa akan otomatis dijadwalkan ke batch yang masih memiliki kuota tersedia.',
+                'button' => 'Approve & Jadwalkan',
+                'tone' => 'blue',
+            ],
+            'rejectPengajuan' => [
+                'title' => 'Tolak Pengajuan Sidang',
+                'message' => 'Pengajuan sidang mahasiswa akan ditandai sebagai ditolak.',
+                'button' => 'Ya, Tolak',
+                'tone' => 'rose',
+            ],
+            default => null,
+        };
+
+        if (! $config) {
+            return;
+        }
+
+        $this->confirmAction = $action;
+        $this->confirmId = $id;
+        $this->confirmTitle = $config['title'];
+        $this->confirmMessage = $config['message'];
+        $this->confirmButton = $config['button'];
+        $this->confirmTone = $config['tone'];
+
+        $this->dispatch('open-modal', name: 'confirm-jadwal-sidang');
+    }
+
+    public function runConfirm(): void
+    {
+        if ($this->confirmId === null) {
+            return;
+        }
+
+        match ($this->confirmAction) {
+            'hapusBatch' => $this->hapusBatch($this->confirmId),
+            'hapusSidang' => $this->hapusSidang($this->confirmId),
+            'approvePengajuan' => $this->approvePengajuan($this->confirmId),
+            'rejectPengajuan' => $this->rejectPengajuan($this->confirmId),
+            default => null,
+        };
+
+        $this->dispatch('close-modal', name: 'confirm-jadwal-sidang');
+        $this->resetConfirm();
+    }
+
+    public function resetConfirm(): void
+    {
+        $this->reset([
+            'confirmAction',
+            'confirmId',
+            'confirmTitle',
+            'confirmMessage',
+            'confirmButton',
+            'confirmTone',
+        ]);
     }
 
     public function render()

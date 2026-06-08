@@ -107,7 +107,13 @@
             </div>
             <div class="mt-4 border-t border-slate-100"></div>
 
-            <form wire:submit.prevent="store" class="mt-4 space-y-4">
+            <form wire:submit.prevent="store" novalidate class="mt-4 space-y-4">
+                @if (! $editId)
+                    <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+                        Akun admin tidak memakai password default. Isi password awal minimal 8 karakter.
+                    </div>
+                @endif
+
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
                     <input type="text" wire:model="name" placeholder="Nama admin"
@@ -122,14 +128,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700">{{ $editId ? 'Password Baru' : 'Password' }}</label>
-                    <input type="password" wire:model="password" placeholder="••••••••"
+                    <input type="password" wire:model="password" placeholder="Minimal 8 karakter"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('password') <x-ui.validation-error :message="$message" /> @enderror
                     @if ($editId) <p class="mt-1 text-xs text-slate-400">Kosongkan jika tidak ingin mengubah password.</p> @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Konfirmasi Password</label>
-                    <input type="password" wire:model="password_confirmation" placeholder="••••••••"
+                    <input type="password" wire:model="password_confirmation" placeholder="Ulangi password"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                 </div>
                 <div class="border-t border-slate-100 pt-4 flex justify-end gap-3">

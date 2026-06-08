@@ -46,8 +46,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                    <button type="button" wire:click="deleteSelected"
-                        wire:confirm="Yakin ingin menghapus semua data mahasiswa yang dipilih?"
+                    <button type="button" wire:click="confirmDeleteSelected"
                         class="inline-flex items-center rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
                         @disabled(empty($selectedIds))>
                         Hapus Terpilih ({{ count($selectedIds) }})
@@ -172,8 +171,14 @@
 
             <div class="mt-4 border-t border-slate-100"></div>
 
-            <form wire:submit.prevent="store" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <form wire:submit.prevent="store" novalidate class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 @csrf
+                @if (! $editId)
+                    <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700 sm:col-span-2">
+                        Password default akun baru: <span class="font-bold text-blue-900">Mahasiswa123!</span>
+                    </div>
+                @endif
+
                 <div class="sm:col-span-2">
                     <label for="name" class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
                     <input id="name" type="text" wire:model.defer="name" placeholder="Masukkan nama lengkap"
@@ -183,14 +188,16 @@
 
                 <div>
                     <label for="nim" class="block text-sm font-medium text-slate-700">NIM</label>
-                    <input id="nim" type="text" wire:model.defer="nim" placeholder="Nomor Induk Mahasiswa"
+                    <input id="nim" type="text" wire:model.defer="nim" inputmode="numeric"
+                        placeholder="Contoh: 202301001"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('nim') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
 
                 <div>
                     <label for="angkatan" class="block text-sm font-medium text-slate-700">Angkatan</label>
-                    <input id="angkatan" type="text" wire:model.defer="angkatan" placeholder="Contoh: 2023"
+                    <input id="angkatan" type="text" wire:model.defer="angkatan" inputmode="numeric"
+                        maxlength="4" placeholder="Contoh: 2023"
                         class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                     @error('angkatan') <x-ui.validation-error :message="$message" /> @enderror
                 </div>
@@ -256,6 +263,32 @@
         </div>
     </livewire:components.modal>
 
+    <livewire:components.modal name="delete-selected-mahasiswa">
+        <div class="w-full">
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                    <svg class="size-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">Hapus Mahasiswa Terpilih</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">{{ count($selectedIds) }} data mahasiswa terpilih akan dihapus permanen.</p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" wire:click="$dispatch('close-modal', {name: 'delete-selected-mahasiswa'})"
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button" wire:click="deleteSelected"
+                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </livewire:components.modal>
+
     <livewire:components.modal name="reset-mahasiswa-password">
         <div class="w-full">
             <div class="flex items-center gap-4">
@@ -267,7 +300,7 @@
                 <div>
                     <h3 class="text-base font-semibold text-slate-900">Reset Password</h3>
                     <p class="mt-0.5 text-sm text-slate-500">
-                        Password untuk <span class="font-semibold text-slate-700">{{ $resetEmail }}</span> akan diubah ke password acak baru.
+                        Password untuk <span class="font-semibold text-slate-700">{{ $resetEmail }}</span> akan diubah ke password default <span class="font-bold text-slate-800">Mahasiswa123!</span>.
                     </p>
                 </div>
             </div>

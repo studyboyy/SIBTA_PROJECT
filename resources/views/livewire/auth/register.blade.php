@@ -7,41 +7,50 @@
                 </div>
                 <h2 class="mt-4 text-center text-xl font-bold tracking-tight text-gray-900">Sign Up</h2>
             </div>
-            @error(session('error'))
-                <p class="text-center text-sm/6 text-red-500">
-                    {{ $message }}
-                </p>
-            @enderror
-            <form wire:submit.prevent="store" class="space-y-6">
+            @if (session('error'))
+                <div class="flex justify-center">
+                    <x-ui.validation-error :message="session('error')" />
+                </div>
+            @endif
+            <form wire:submit.prevent="store" novalidate class="space-y-6">
                 @csrf
                 <div>
                     <label for="name" class="block text-sm/6 font-medium text-gray-900">Nama Lengkap</label>
                     <div class="mt-2">
-                        <input id="name" type="text" name="name" wire:model="name" required
+                        <input id="name" type="text" name="name" wire:model="name"
                             autocomplete="name" placeholder="Masukan Nama Lengkap"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('name')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="nim" class="block text-sm/6 font-medium text-gray-900">NIM</label>
                     <div class="mt-2">
-                        <input id="nim" type="text" name="nim" wire:model="nim" required autocomplete="nim"
-                            placeholder="Masukan NIM"
+                        <input id="nim" type="text" name="nim" wire:model="nim" autocomplete="nim"
+                            inputmode="numeric" placeholder="Masukan NIM"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('nim')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="prodi" class="block text-sm/6 font-medium text-gray-900">Program Studi</label>
                     <div class="mt-2">
-                        <input id="prodi" type="text" name="prodi" wire:model="prodi" required autocomplete="prodi"
+                        <input id="prodi" type="text" name="prodi" wire:model="prodi" autocomplete="prodi"
                             placeholder="Masukan Program Studi"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('prodi')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="angkatan" class="block text-sm/6 font-medium text-gray-900">Angkatan</label>
                     <div class="mt-2">
-                        <select id="angkatan" name="angkatan" wire:model="angkatan" required
+                        <select id="angkatan" name="angkatan" wire:model="angkatan"
                             autocomplete="angkatan" placeholder="Masukan Angkatan"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
                             <option value="">Pilih Angkatan</option>
@@ -51,41 +60,56 @@
                             <option value="2023">2023</option>
                         </select>
                     </div>
+                    @error('angkatan')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="email" class="block text-sm/6 font-medium text-gray-900">Email</label>
                     <div class="mt-2">
-                        <input id="email" type="email" name="email" wire:model="email" required
+                        <input id="email" type="email" name="email" wire:model="email"
                             autocomplete="email" placeholder="Masukan email atau nim"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('email')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
 
                 <div>
                     <label for="password" class="block text-sm/6 font-medium text-gray-900">Kata Sandi</label>
                     <div class="mt-2">
                         <input id="password" type="password" name="password" wire:model="password"
-                            placeholder="Masukan Kata Sandi" required autocomplete="current-password"
+                            placeholder="Masukan Kata Sandi" autocomplete="current-password"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('password')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-sm/6 font-medium text-gray-900">Konfirmasi Kata
                         Sandi</label>
                     <div class="mt-2">
                         <input id="password_confirmation" type="password" name="password_confirmation"
-                            wire:model="password_confirmation" placeholder="Konfirmasi Kata Sandi" required
+                            wire:model="password_confirmation" placeholder="Konfirmasi Kata Sandi"
                             autocomplete="current-password"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('password_confirmation')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                 </div>
                 <div>
                     <label for="photo" class="block text-sm/6 font-medium text-gray-900">Foto Profile</label>
                     <div class="mt-2">
                         <input id="photo" type="file" name="photo" wire:model="photo"
-                            placeholder="Pilih Foto Profile" required autocomplete="current-password"
+                            placeholder="Pilih Foto Profile" autocomplete="current-password"
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
                     </div>
+                    @error('photo')
+                        <x-ui.validation-error :message="$message" />
+                    @enderror
                     @if ($photo)
                         <img src="{{ $photo->temporaryUrl() }}" class="w-24 h-24 rounded-full object-cover">
                     @endif

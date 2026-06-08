@@ -43,7 +43,7 @@
             <p class="mt-1 text-sm text-slate-500">Format file: PDF, DOC, DOCX. Maksimal 5MB. Dokumen yang diunggah akan
                 diperiksa dosen.</p>
 
-            <form wire:submit.prevent="save" class="mt-6 space-y-5">
+            <form wire:submit.prevent="save" novalidate class="mt-6 space-y-5">
                 <div>
                     <label for="document_type" class="block text-sm font-medium text-slate-700">Jenis Dokumen</label>
                     <select id="document_type" wire:model="documentType"

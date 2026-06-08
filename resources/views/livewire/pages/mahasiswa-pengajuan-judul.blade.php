@@ -78,7 +78,7 @@
                         <p class="mt-1 text-xs text-emerald-700">Form pengajuan judul baru tidak tersedia.</p>
                     </div>
                 @else
-                    <form wire:submit="saveJudul" class="mt-5 space-y-4">
+                    <form wire:submit="saveJudul" novalidate class="mt-5 space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Judul Skripsi <span class="text-red-500">*</span></label>
                             <input type="text" wire:model="judul"
@@ -135,7 +135,7 @@
                         Tunggu hasilnya sebelum mengajukan kembali.
                     </div>
                 @else
-                    <form wire:submit="savePengajuanPembimbing" class="mt-5 space-y-4">
+                    <form wire:submit="savePengajuanPembimbing" novalidate class="mt-5 space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Pilih Dosen <span class="text-red-500">*</span></label>
                             <p class="mt-0.5 text-xs text-slate-400">Dosen yang sudah menjadi pembimbing aktif Anda tidak ditampilkan.</p>
@@ -313,6 +313,7 @@
                                         <div>
                                             <label class="mb-1 block text-xs font-medium text-slate-700">Judul Revisi</label>
                                             <input type="text" wire:model="revisiJudul.{{ $pengajuan->id }}"
+                                                placeholder="Masukkan judul revisi"
                                                 class="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                                             @error('revisiJudul.' . $pengajuan->id) <x-ui.validation-error :message="$message" /> @enderror
                                         </div>
@@ -320,6 +321,7 @@
                                         <div>
                                             <label class="mb-1 block text-xs font-medium text-slate-700">Deskripsi</label>
                                             <textarea wire:model="revisiDeskripsi.{{ $pengajuan->id }}" rows="3"
+                                                placeholder="Perbarui deskripsi singkat penelitian"
                                                 class="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea>
                                             @error('revisiDeskripsi.' . $pengajuan->id) <x-ui.validation-error :message="$message" /> @enderror
                                         </div>

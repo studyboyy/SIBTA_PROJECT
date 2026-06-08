@@ -56,6 +56,8 @@ class DosenBimbinganLog extends Component
 
     public array $catatanRevisi = [];
 
+    public array $pendingDeleteSession = [];
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -424,6 +426,37 @@ class DosenBimbinganLog extends Component
         }
 
         session()->flash('success', 'Semua jadwal pada session ini telah dihapus.');
+    }
+
+    public function confirmHapusSession($tanggal, $jam, $mode, $lokasi, $linkOnline = null): void
+    {
+        $this->pendingDeleteSession = [
+            'tanggal' => $tanggal,
+            'jam' => $jam,
+            'mode' => $mode,
+            'lokasi' => $lokasi,
+            'link_online' => $linkOnline,
+        ];
+
+        $this->dispatch('open-modal', name: 'delete-bimbingan-session');
+    }
+
+    public function hapusSessionConfirmed(): void
+    {
+        if (empty($this->pendingDeleteSession)) {
+            return;
+        }
+
+        $this->hapusSession(
+            $this->pendingDeleteSession['tanggal'] ?? null,
+            $this->pendingDeleteSession['jam'] ?? null,
+            $this->pendingDeleteSession['mode'] ?? null,
+            $this->pendingDeleteSession['lokasi'] ?? null,
+            $this->pendingDeleteSession['link_online'] ?? null,
+        );
+
+        $this->dispatch('close-modal', name: 'delete-bimbingan-session');
+        $this->pendingDeleteSession = [];
     }
 
     public function kirimCatatanRevisi(int $id): void

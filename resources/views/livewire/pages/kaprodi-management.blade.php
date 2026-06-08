@@ -104,7 +104,13 @@
                 </button>
             </div>
             <div class="mt-4 border-t border-slate-100"></div>
-            <form wire:submit.prevent="store" class="mt-4 grid grid-cols-1 gap-4">
+            <form wire:submit.prevent="store" novalidate class="mt-4 grid grid-cols-1 gap-4">
+                @if (! $editId)
+                    <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+                        Password default akun baru: <span class="font-bold text-blue-900">Kaprodi123!</span>
+                    </div>
+                @endif
+
                 <div>
                     <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
                     <input type="text" wire:model.defer="name" placeholder="Nama kaprodi"
@@ -127,9 +133,6 @@
                         @endforeach
                     </select>
                     @error('prodi_id') <x-ui.validation-error :message="$message" /> @enderror
-                </div>
-                <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-                    Password default akun baru: <span class="font-bold text-blue-900">Kaprodi123!</span>
                 </div>
                 <div class="border-t border-slate-100 pt-4 flex justify-end gap-3">
                     <button type="button" wire:click="closeModal"

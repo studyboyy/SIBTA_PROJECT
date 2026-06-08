@@ -143,7 +143,7 @@
                     Pengajuan sidang sedang diproses. Tunggu keputusan dosen, kaprodi, atau admin sebelum mengirim ulang.
                 </div>
             @elseif ($bolehAjukan)
-                <form wire:submit.prevent="submit" class="mt-5 space-y-4">
+                <form wire:submit.prevent="submit" novalidate class="mt-5 space-y-4">
                     <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700">Catatan Pengajuan (opsional)</label>
                         <textarea wire:model="catatan_mahasiswa" rows="4"

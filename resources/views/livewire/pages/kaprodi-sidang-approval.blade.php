@@ -117,6 +117,7 @@
             <div class="mt-4">
                 <label class="block text-sm font-medium text-slate-700">Catatan Kaprodi</label>
                 <textarea wire:model.defer="catatan_kaprodi" rows="4"
+                    placeholder="Tambahkan catatan approval atau alasan penolakan"
                     class="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea>
                 @error('catatan_kaprodi')
                     <x-ui.validation-error :message="$message" />

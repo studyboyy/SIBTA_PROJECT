@@ -191,18 +191,17 @@
                                             {{ $item->dosen->user->name ?? '-' }}
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            <button wire:click="hapus({{ $item->id }})"
-                                                wire:confirm="Yakin ingin menghapus penugasan ini?"
+                                            <button wire:click="confirmHapus({{ $item->id }})"
                                                 wire:loading.attr="disabled"
-                                                wire:target="hapus({{ $item->id }})"
+                                                wire:target="confirmHapus({{ $item->id }})"
                                                 class="inline-flex items-center gap-1.5 rounded-xl bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60">
-                                                <svg wire:loading wire:target="hapus({{ $item->id }})"
+                                                <svg wire:loading wire:target="confirmHapus({{ $item->id }})"
                                                     class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10"
                                                         stroke="currentColor" stroke-width="4" />
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                                                 </svg>
-                                                <svg wire:loading.remove wire:target="hapus({{ $item->id }})"
+                                                <svg wire:loading.remove wire:target="confirmHapus({{ $item->id }})"
                                                     class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M3 7h18" />
@@ -224,4 +223,32 @@
         </div>
 
     </div>
+
+    <livewire:components.modal name="delete-bimbingan">
+        <div class="w-full">
+            <div class="flex items-center gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                    <svg class="size-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-slate-900">Hapus Penugasan</h3>
+                    <p class="mt-0.5 text-sm text-slate-500">
+                        Penugasan <span class="font-semibold text-slate-700">{{ $deleteName }}</span> akan dihapus.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" wire:click="$dispatch('close-modal', {name: 'delete-bimbingan'})"
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button" wire:click="hapusConfirmed"
+                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </livewire:components.modal>
 </div>
