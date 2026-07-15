@@ -7,6 +7,7 @@ use App\Models\DokumenTa;
 use App\Models\DokumenTaVersion;
 use App\Models\PengajuanSidang;
 use App\Support\SidangDocumentCatalog;
+use App\Support\SupervisorApprovalSync;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -134,10 +135,16 @@ class DosenKontrolBimbingan extends Component
             ->whereIn('mahasiswa_id', $mahasiswaIds)
             ->firstOrFail();
 
+        $catatan = trim((string) ($this->catatanDokumen[$dokumenId] ?? '')) ?: null;
+
         $dokumen->update([
-            'status' => $status,
-            'catatan' => trim((string) ($this->catatanDokumen[$dokumenId] ?? '')) ?: null,
+            'catatan' => $catatan,
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($dokumen, (int) $dokumen->mahasiswa_id, (int) $dosen->id, $status, $catatan);
+        $approvalSync->syncDocument($dokumen->refresh());
+        $dokumen->refresh();
 
         DokumenTaVersion::query()->create([
             'dokumen_ta_id' => $dokumen->id,
@@ -180,12 +187,18 @@ class DosenKontrolBimbingan extends Component
 
         $path = $file->storeAs('dokumen-ta/reviewer-markup/dosen-' . $dosen->id, $filename, 'public');
 
+        $catatan = trim((string) ($this->catatanDokumen[$dokumenId] ?? ''));
+
         $dokumen->update([
-            'status' => 'revisi',
-            'catatan' => trim((string) ($this->catatanDokumen[$dokumenId] ?? '')),
+            'catatan' => $catatan,
             'reviewer_markup_file' => $path,
             'revisi_requested_at' => now(),
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($dokumen, (int) $dokumen->mahasiswa_id, (int) $dosen->id, 'revisi', $catatan);
+        $approvalSync->syncDocument($dokumen->refresh());
+        $dokumen->refresh();
 
         DokumenTaVersion::query()->create([
             'dokumen_ta_id' => $dokumen->id,
@@ -247,12 +260,14 @@ class DosenKontrolBimbingan extends Component
         }
 
         $pengajuan->update([
-            'status_dosen' => $status,
             'catatan_dosen' => $catatan !== '' ? $catatan : null,
-            'acc_kelayakan_at' => $status === 'approved' ? now() : null,
         ]);
 
-        session()->flash('success', 'Status kelayakan sidang berhasil diperbarui.');
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($pengajuan, (int) $pengajuan->mahasiswa_id, (int) $dosen->id, $status, $catatan !== '' ? $catatan : null);
+        $approvalSync->syncSidang($pengajuan->refresh());
+
+        session()->flash('success', 'Review kelayakan sidang berhasil disimpan. Status ACC aktif setelah semua pembimbing menyetujui.');
     }
 
     public function render()

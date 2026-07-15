@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Livewire\Pages\Concerns\UsesDosenScope;
 use App\Models\PengajuanSidang;
 use App\Support\SidangDocumentCatalog;
+use App\Support\SupervisorApprovalSync;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
@@ -78,14 +79,16 @@ class DosenKelayakanSidang extends Component
         }
 
         $pengajuan->update([
-            'status_dosen' => $status,
             'catatan_dosen' => $catatan !== '' ? $catatan : null,
-            'acc_kelayakan_at' => $status === 'approved' ? now() : null,
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($pengajuan, (int) $pengajuan->mahasiswa_id, (int) $this->getDosen()->id, $status, $catatan !== '' ? $catatan : null);
+        $approvalSync->syncSidang($pengajuan->refresh());
 
         $this->catatanSidang[$pengajuanId] = '';
 
-        session()->flash('success', 'Status kelayakan sidang berhasil diperbarui.');
+        session()->flash('success', 'Review kelayakan sidang berhasil disimpan. Status ACC aktif setelah semua pembimbing menyetujui.');
     }
 
     public function buildDigitalSignature(string $module, int $recordId, $approvedAt, ?int $signerUserId = null): ?string

@@ -4,6 +4,7 @@ namespace App\Livewire\Pages;
 
 use App\Models\Bimbingans;
 use App\Models\Pengajuanjuduls;
+use App\Support\SupervisorApprovalSync;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -78,16 +79,19 @@ class PengajuanJudulReview extends Component
         }
 
         $pengajuan->update([
-            'status' => $status,
             'catatan' => $catatan !== '' ? $catatan : null,
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($pengajuan, (int) $pengajuan->mahasiswa_id, (int) Auth::user()->dosen->id, $status, $catatan !== '' ? $catatan : null);
+        $approvalSync->syncTitle($pengajuan->refresh());
 
         if (in_array($status, ['approved', 'rejected', 'revisi'], true)) {
             unset($this->catatan[$pengajuanId]);
         }
 
         $this->batalEditStatus($pengajuanId);
-        session()->flash('success', 'Status pengajuan berhasil diperbarui.');
+        session()->flash('success', 'Review pengajuan berhasil disimpan. Status approved akan aktif setelah semua pembimbing menyetujui.');
     }
 
     public function render()

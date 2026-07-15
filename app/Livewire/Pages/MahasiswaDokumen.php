@@ -4,6 +4,7 @@ namespace App\Livewire\Pages;
 
 use App\Models\DokumenTa;
 use App\Models\DokumenTaVersion;
+use App\Models\SupervisorApproval;
 use App\Support\SidangDocumentCatalog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -86,6 +87,11 @@ class MahasiswaDokumen extends Component
                 'status' => 'pending',
                 'catatan' => null,
             ]);
+
+            SupervisorApproval::query()
+                ->where('approvable_type', DokumenTa::class)
+                ->where('approvable_id', $dokumen->id)
+                ->delete();
         } else {
             $dokumen = DokumenTa::query()->create([
                 'mahasiswa_id' => $mahasiswa->id,
@@ -150,6 +156,11 @@ class MahasiswaDokumen extends Component
             'status' => 'pending',
             'revised_submitted_at' => now(),
         ]);
+
+        SupervisorApproval::query()
+            ->where('approvable_type', DokumenTa::class)
+            ->where('approvable_id', $dokumen->id)
+            ->delete();
 
         DokumenTaVersion::query()->create([
             'dokumen_ta_id' => $dokumen->id,

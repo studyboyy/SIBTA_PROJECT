@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Livewire\Pages\Concerns\UsesDosenScope;
 use App\Models\DokumenTa;
 use App\Models\DokumenTaVersion;
+use App\Support\SupervisorApprovalSync;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
@@ -65,14 +66,18 @@ class DosenReviewDokumen extends Component
         $dokumen = $this->findOwnedDokumen($dokumenId);
 
         $dokumen->update([
-            'status' => $status,
             'catatan' => $catatan !== '' ? $catatan : null,
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($dokumen, (int) $dokumen->mahasiswa_id, (int) $this->getDosen()->id, $status, $catatan !== '' ? $catatan : null);
+        $approvalSync->syncDocument($dokumen->refresh());
+        $dokumen->refresh();
 
         $this->createDokumenVersion($dokumen, 'status_update');
         $this->catatanDokumen[$dokumenId] = '';
 
-        session()->flash('success', 'Status dokumen berhasil diperbarui.');
+        session()->flash('success', 'Review dokumen berhasil disimpan. Dokumen disetujui setelah semua pembimbing menyetujui.');
     }
 
     public function mintaRevisi(int $dokumenId): void
@@ -98,11 +103,15 @@ class DosenReviewDokumen extends Component
         }
 
         $dokumen->update([
-            'status' => 'revisi',
             'catatan' => trim((string) $this->catatanDokumen[$dokumenId]),
             'reviewer_markup_file' => $path,
             'revisi_requested_at' => now(),
         ]);
+
+        $approvalSync = app(SupervisorApprovalSync::class);
+        $approvalSync->record($dokumen, (int) $dokumen->mahasiswa_id, (int) $dosen->id, 'revisi', trim((string) $this->catatanDokumen[$dokumenId]));
+        $approvalSync->syncDocument($dokumen->refresh());
+        $dokumen->refresh();
 
         $this->createDokumenVersion($dokumen, 'review_revisi', $path);
 

@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Models\DokumenTa;
 use App\Models\PengajuanSidang;
 use App\Models\Sidangs;
+use App\Models\SupervisorApproval;
 use App\Support\SidangDocumentCatalog;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
@@ -64,6 +65,11 @@ class MahasiswaPengajuanSidang extends Component
         $pengajuan->kaprodi_approved_by = null;
         $pengajuan->diproses_admin_pada = null;
         $pengajuan->save();
+
+        SupervisorApproval::query()
+            ->where('approvable_type', PengajuanSidang::class)
+            ->where('approvable_id', $pengajuan->id)
+            ->delete();
 
         $this->dispatch('notify', message: 'Pengajuan sidang berhasil dikirim.');
     }

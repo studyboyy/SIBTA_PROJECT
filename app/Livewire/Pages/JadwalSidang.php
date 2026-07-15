@@ -4,6 +4,7 @@ namespace App\Livewire\Pages;
 
 use App\Models\Bimbingans;
 use App\Models\Dosens;
+use App\Models\Mahasiswas;
 use App\Models\PengajuanSidang;
 use App\Models\Prodi;
 use App\Models\SidangBatch;
@@ -399,44 +400,42 @@ class JadwalSidang extends Component
             ->latest('id')
             ->paginate($this->pengajuanPerPage, ['*'], 'pengajuanPage');
 
-        $mahasiswaBimbinganQuery = Bimbingans::query()
-            ->with(['mahasiswa.user', 'mahasiswa.programStudi.kaprodiUser', 'mahasiswa.pengajuanSidang', 'dosen.user'])
+        $mahasiswaBimbinganQuery = Mahasiswas::query()
+            ->with(['user', 'programStudi.kaprodiUser', 'pengajuanSidang', 'bimbingans.dosen.user'])
+            ->whereHas('bimbingans')
             ->when($this->mahasiswaProdi !== '', function ($query) {
-                $query->whereHas('mahasiswa', fn ($mahasiswaQuery) => $mahasiswaQuery->where('prodi_id', (int) $this->mahasiswaProdi));
+                $query->where('prodi_id', (int) $this->mahasiswaProdi);
             })
             ->when($this->mahasiswaStatus === 'layak', function ($query) {
-                $query->whereHas('mahasiswa.pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'));
+                $query->whereHas('pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'));
             })
             ->when($this->mahasiswaStatus === 'belum_layak', function ($query) {
-                $query->whereDoesntHave('mahasiswa.pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'));
+                $query->whereDoesntHave('pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'));
             })
             ->when($this->mahasiswaSearch !== '', function ($query) {
                 $search = trim($this->mahasiswaSearch);
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->whereHas('mahasiswa.user', fn ($userQuery) => $userQuery->where('name', 'like', '%'.$search.'%'))
-                        ->orWhereHas('mahasiswa', function ($mahasiswaQuery) use ($search) {
-                            $mahasiswaQuery->where('nim', 'like', '%'.$search.'%')
-                                ->orWhere('prodi', 'like', '%'.$search.'%');
-                        })
-                        ->orWhereHas('mahasiswa.programStudi', fn ($prodiQuery) => $prodiQuery->where('name', 'like', '%'.$search.'%'))
-                        ->orWhereHas('mahasiswa.programStudi.kaprodiUser', fn ($kaprodiQuery) => $kaprodiQuery->where('name', 'like', '%'.$search.'%'))
-                        ->orWhereHas('dosen.user', fn ($dosenQuery) => $dosenQuery->where('name', 'like', '%'.$search.'%'));
+                    $subQuery->whereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', '%'.$search.'%'))
+                        ->orWhere('nim', 'like', '%'.$search.'%')
+                        ->orWhere('prodi', 'like', '%'.$search.'%')
+                        ->orWhereHas('programStudi', fn ($prodiQuery) => $prodiQuery->where('name', 'like', '%'.$search.'%'))
+                        ->orWhereHas('programStudi.kaprodiUser', fn ($kaprodiQuery) => $kaprodiQuery->where('name', 'like', '%'.$search.'%'))
+                        ->orWhereHas('bimbingans.dosen.user', fn ($dosenQuery) => $dosenQuery->where('name', 'like', '%'.$search.'%'));
                 });
             });
 
         $hasLayakMahasiswa = (clone $mahasiswaBimbinganQuery)
-            ->whereHas('mahasiswa.pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'))
+            ->whereHas('pengajuanSidang', fn ($sidangQuery) => $sidangQuery->where('status_dosen', 'approved'))
             ->exists();
 
         $mahasiswaBimbinganList = $mahasiswaBimbinganQuery
-            ->leftJoin('mahasiswas as sort_mahasiswas', 'sort_mahasiswas.id', '=', 'bimbingans.mahasiswa_id')
-            ->leftJoin('users as sort_users', 'sort_users.id', '=', 'sort_mahasiswas.user_id')
-            ->leftJoin('pengajuan_sidangs as sort_pengajuan_sidangs', 'sort_pengajuan_sidangs.mahasiswa_id', '=', 'bimbingans.mahasiswa_id')
-            ->select('bimbingans.*')
+            ->leftJoin('users as sort_users', 'sort_users.id', '=', 'mahasiswas.user_id')
+            ->leftJoin('pengajuan_sidangs as sort_pengajuan_sidangs', 'sort_pengajuan_sidangs.mahasiswa_id', '=', 'mahasiswas.id')
+            ->select('mahasiswas.*')
             ->when($hasLayakMahasiswa, fn ($query) => $query->orderByRaw("CASE WHEN sort_pengajuan_sidangs.status_dosen = 'approved' THEN 0 ELSE 1 END"))
             ->orderBy('sort_users.name')
-            ->orderBy('sort_mahasiswas.nim')
+            ->orderBy('mahasiswas.nim')
             ->paginate($this->mahasiswaPerPage, ['*'], 'mahasiswaBimbinganPage');
 
         $nextWave = ((int) SidangBatch::query()->max('gelombang')) + 1;

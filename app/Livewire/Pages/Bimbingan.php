@@ -18,6 +18,8 @@ class Bimbingan extends Component
 
     public $dosen_id = '';
 
+    public string $peran = Bimbingans::PERAN_PEMBIMBING_1;
+
     public $search = '';
 
     public int $perPage = 5;
@@ -46,13 +48,18 @@ class Bimbingan extends Component
             'mahasiswa_ids' => 'required|array|min:1',
             'mahasiswa_ids.*' => 'exists:mahasiswas,id',
             'dosen_id' => 'required|exists:dosens,id',
+            'peran' => 'required|in:'.implode(',', array_keys(Bimbingans::peranOptions())),
         ]);
 
         $dosen = Dosens::query()
             ->withCount('bimbingans')
             ->findOrFail((int) $this->dosen_id);
 
-        $selectedCount = count($this->mahasiswa_ids);
+        $selectedCount = Bimbingans::query()
+            ->whereIn('mahasiswa_id', $this->mahasiswa_ids)
+            ->where('dosen_id', $this->dosen_id)
+            ->count();
+        $selectedCount = count($this->mahasiswa_ids) - $selectedCount;
         $remainingQuota = max((int) $dosen->kuota_bimbingan - (int) $dosen->bimbingans_count, 0);
 
         if ($remainingQuota <= 0) {
@@ -71,15 +78,31 @@ class Bimbingan extends Component
         $added = 0;
 
         foreach ($this->mahasiswa_ids as $mhsId) {
-            $exists = Bimbingans::where('mahasiswa_id', $mhsId)->exists();
+            $sameDosenExists = Bimbingans::query()
+                ->where('mahasiswa_id', $mhsId)
+                ->where('dosen_id', $this->dosen_id)
+                ->exists();
 
-            if ($exists) {
+            if ($sameDosenExists) {
                 $skipped++;
 
                 continue;
             }
 
-            Bimbingans::setActiveSupervisor((int) $mhsId, (int) $this->dosen_id);
+            if ($this->peran === Bimbingans::PERAN_PEMBIMBING_2) {
+                $hasPrimary = Bimbingans::query()
+                    ->where('mahasiswa_id', $mhsId)
+                    ->where('peran', Bimbingans::PERAN_PEMBIMBING_1)
+                    ->exists();
+
+                if (! $hasPrimary) {
+                    $skipped++;
+
+                    continue;
+                }
+            }
+
+            Bimbingans::setSupervisor((int) $mhsId, (int) $this->dosen_id, $this->peran);
 
             $added++;
         }
@@ -87,17 +110,34 @@ class Bimbingan extends Component
         $this->reset(['mahasiswa_ids', 'dosen_id']);
 
         if ($added > 0 && $skipped === 0) {
-            session()->flash('success', $added.' penugasan berhasil ditambahkan.');
+            session()->flash('success', $added.' penugasan berhasil disimpan.');
         } elseif ($added > 0) {
-            session()->flash('success', $added.' ditambahkan, '.$skipped.' dilewati (sudah ada).');
+            session()->flash('success', $added.' disimpan, '.$skipped.' dilewati (dosen sudah menjadi pembimbing mahasiswa tersebut).');
         } else {
-            session()->flash('error', 'Semua mahasiswa yang dipilih sudah memiliki dosen pembimbing.');
+            session()->flash('error', 'Tidak ada penugasan yang disimpan. Pastikan dosen belum menjadi pembimbing mahasiswa yang dipilih.');
         }
     }
 
     public function hapus(int $id): void
     {
-        Bimbingans::findOrFail($id)->delete();
+        $bimbingan = Bimbingans::query()->findOrFail($id);
+        $totalPembimbing = Bimbingans::query()
+            ->where('mahasiswa_id', $bimbingan->mahasiswa_id)
+            ->count();
+
+        if ($totalPembimbing <= 1) {
+            session()->flash('error', 'Pembimbing 1 wajib ada. Tambahkan pembimbing pengganti sebelum menghapus penugasan terakhir.');
+
+            return;
+        }
+
+        if ($bimbingan->peran === Bimbingans::PERAN_PEMBIMBING_1) {
+            session()->flash('error', 'Pembimbing 1 tidak dapat dihapus selama masih ada pembimbing lain. Ubah penugasan Pembimbing 1 terlebih dahulu.');
+
+            return;
+        }
+
+        $bimbingan->delete();
         session()->flash('success', 'Penugasan berhasil dihapus.');
     }
 
@@ -108,7 +148,7 @@ class Bimbingan extends Component
             ->findOrFail($id);
 
         $this->deleteId = $bimbingan->id;
-        $this->deleteName = ($bimbingan->mahasiswa?->user?->name ?? 'Mahasiswa').' - '.($bimbingan->dosen?->user?->name ?? 'Dosen');
+        $this->deleteName = ($bimbingan->mahasiswa?->user?->name ?? 'Mahasiswa').' - '.Bimbingans::peranLabel($bimbingan->peran).' - '.($bimbingan->dosen?->user?->name ?? 'Dosen');
 
         $this->dispatch('open-modal', name: 'delete-bimbingan');
     }
@@ -127,10 +167,10 @@ class Bimbingan extends Component
 
     public function render()
     {
-        $blockedMahasiswaIds = Bimbingans::query()->pluck('mahasiswa_id');
-
         $mahasiswas = Mahasiswas::with('user')
-            ->whereNotIn('id', $blockedMahasiswaIds)
+            ->when($this->peran === Bimbingans::PERAN_PEMBIMBING_2, function ($query) {
+                $query->whereHas('bimbingans', fn ($subQuery) => $subQuery->where('peran', Bimbingans::PERAN_PEMBIMBING_1));
+            })
             ->get();
 
         $bimbingans = Bimbingans::with(['mahasiswa.user', 'dosen.user'])
@@ -141,6 +181,7 @@ class Bimbingan extends Component
                         ->orWhereHas('dosen.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
                 });
             })
+            ->orderByRaw("CASE peran WHEN 'pembimbing_1' THEN 1 WHEN 'pembimbing_2' THEN 2 ELSE 3 END")
             ->latest()
             ->paginate($this->perPage);
 
@@ -169,6 +210,7 @@ class Bimbingan extends Component
             'bimbingans' => $bimbingans,
             'mahasiswas' => $mahasiswas,
             'dosens' => $dosens,
+            'peranOptions' => Bimbingans::peranOptions(),
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Bimbingans;
 use App\Models\Dosens;
 use App\Models\Pengajuanjuduls;
 use App\Models\PengajuanPembimbing;
+use App\Models\SupervisorApproval;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -132,8 +133,12 @@ class MahasiswaPengajuanJudul extends Component
         $dosenId = (int) $this->dosenIdPengajuan;
 
         // Blokir jika ingin mengajukan dosen yang sama dengan pembimbing aktif
-        $pembimbingAktif = Bimbingans::where('mahasiswa_id', $mahasiswa->id)->first();
-        if ($pembimbingAktif && (int) $pembimbingAktif->dosen_id === $dosenId) {
+        $alreadyPembimbing = Bimbingans::query()
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('dosen_id', $dosenId)
+            ->exists();
+
+        if ($alreadyPembimbing) {
             $this->addError('dosenIdPengajuan', 'Dosen ini sudah menjadi pembimbing aktif Anda.');
 
             return;
@@ -228,6 +233,11 @@ class MahasiswaPengajuanJudul extends Component
             'status' => 'pending',
         ]);
 
+        SupervisorApproval::query()
+            ->where('approvable_type', Pengajuanjuduls::class)
+            ->where('approvable_id', $pengajuan->id)
+            ->delete();
+
         $this->batalRevisi($pengajuanId);
         $this->dispatch('notify', message: 'Revisi judul berhasil dikirim.');
     }
@@ -250,6 +260,7 @@ class MahasiswaPengajuanJudul extends Component
         // Info pembimbing aktif
         $pembimbingAktif = Bimbingans::where('mahasiswa_id', $mahasiswa->id)
             ->with('dosen.user')
+            ->orderByRaw("CASE peran WHEN 'pembimbing_1' THEN 1 WHEN 'pembimbing_2' THEN 2 ELSE 3 END")
             ->first();
 
         // Pengajuan judul dengan filter/search
@@ -284,7 +295,7 @@ class MahasiswaPengajuanJudul extends Component
         $dosenOptions = Dosens::query()
             ->with('user')
             ->withCount('bimbingans')
-            ->when($pembimbingAktif, fn ($q) => $q->where('id', '!=', $pembimbingAktif->dosen_id))
+            ->whereNotIn('id', Bimbingans::query()->where('mahasiswa_id', $mahasiswa->id)->pluck('dosen_id'))
             ->orderBy('nidn')
             ->get()
             ->map(fn ($d) => [

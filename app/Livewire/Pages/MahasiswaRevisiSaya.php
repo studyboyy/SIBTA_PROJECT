@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Livewire\Pages\Concerns\UsesMahasiswaScope;
 use App\Models\DokumenTa;
 use App\Models\DokumenTaVersion;
+use App\Models\SupervisorApproval;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -78,6 +79,11 @@ class MahasiswaRevisiSaya extends Component
             'status' => 'pending',
             'revised_submitted_at' => now(),
         ]);
+
+        SupervisorApproval::query()
+            ->where('approvable_type', DokumenTa::class)
+            ->where('approvable_id', $dokumen->id)
+            ->delete();
 
         DokumenTaVersion::query()->create([
             'dokumen_ta_id' => $dokumen->id,

@@ -465,13 +465,16 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                @foreach ($mahasiswaBimbinganList as $bimbingan)
+                                @foreach ($mahasiswaBimbinganList as $mahasiswa)
                                     @php
-                                        $mahasiswa = $bimbingan->mahasiswa;
                                         $pengajuanSidang = $mahasiswa?->pengajuanSidang;
                                         $isLayak = ($pengajuanSidang?->status_dosen ?? 'pending') === 'approved';
+                                        $pembimbingNames = $mahasiswa?->bimbingans
+                                            ?->sortBy(fn ($item) => $item->peran === 'pembimbing_1' ? 1 : 2)
+                                            ->map(fn ($item) => \App\Models\Bimbingans::peranLabel($item->peran).': '.($item->dosen?->user?->name ?? '-'))
+                                            ->implode(', ');
                                     @endphp
-                                    <tr wire:key="mahasiswa-bimbingan-sidang-{{ $bimbingan->id }}"
+                                    <tr wire:key="mahasiswa-bimbingan-sidang-{{ $mahasiswa->id }}"
                                         class="hover:bg-slate-50">
                                         <td class="px-4 py-3 font-medium text-slate-800">
                                             {{ $mahasiswa?->user?->name ?? '-' }}
@@ -483,7 +486,7 @@
                                             {{ $mahasiswa?->programStudi?->name ?? ($mahasiswa?->prodi ?? '-') }}
                                         </td>
                                         <td class="px-4 py-3 text-slate-700">
-                                            {{ $bimbingan->dosen?->user?->name ?? '-' }}
+                                            {{ $pembimbingNames ?: '-' }}
                                         </td>
                                         <td class="px-4 py-3 text-slate-600">
                                             {{ $mahasiswa?->programStudi?->kaprodiUser?->name ?? '-' }}

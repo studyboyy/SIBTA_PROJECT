@@ -30,14 +30,24 @@
         <div class="lg:col-span-1">
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-base font-semibold text-slate-900">Tambah Penugasan</h2>
-                <p class="mt-1 text-sm text-slate-500">Pilih mahasiswa dan tetapkan dosen pembimbingnya.</p>
+                <p class="mt-1 text-sm text-slate-500">Pilih mahasiswa, peran pembimbing, lalu tetapkan dosennya.</p>
 
                 <div class="mt-5 space-y-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Peran Pembimbing</label>
+                        <select wire:model.live="peran"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            @foreach ($peranOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-slate-400">Pembimbing 1 wajib. Pembimbing 2 opsional. Memilih mahasiswa yang sudah punya slot ini akan mengganti dosennya.</p>
+                    </div>
 
                     {{-- Multi-select Mahasiswa --}}
                     <div x-data="{ open: false, search: '' }">
                         <label class="mb-1 block text-sm font-medium text-slate-700">Mahasiswa</label>
-                        <p class="mb-2 text-xs text-slate-400">Mahasiswa yang sudah punya pembimbing tidak muncul di sini.</p>
+                        <p class="mb-2 text-xs text-slate-400">Untuk Pembimbing 2, hanya mahasiswa yang sudah punya Pembimbing 1 yang ditampilkan.</p>
 
                         <button type="button" @click="open = !open"
                             class="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
@@ -63,7 +73,7 @@
 
                             <div class="max-h-52 overflow-y-auto">
                                 @if ($mahasiswas->isEmpty())
-                                    <p class="px-3 py-4 text-center text-xs text-slate-400">Semua mahasiswa sudah memiliki dosen pembimbing.</p>
+                                    <p class="px-3 py-4 text-center text-xs text-slate-400">Tidak ada mahasiswa yang tersedia untuk pilihan ini.</p>
                                 @else
                                     @foreach ($mahasiswas as $mhs)
                                         <label
@@ -171,6 +181,7 @@
                                     <th class="rounded-tl-xl px-4 py-3">No</th>
                                     <th class="px-4 py-3">Nama Mahasiswa</th>
                                     <th class="px-4 py-3">NIM</th>
+                                    <th class="px-4 py-3">Peran</th>
                                     <th class="px-4 py-3">Dosen Pembimbing</th>
                                     <th class="rounded-tr-xl px-4 py-3 text-center">Aksi</th>
                                 </tr>
@@ -186,6 +197,11 @@
                                         </td>
                                         <td class="px-4 py-3 font-mono text-slate-600">
                                             {{ $item->mahasiswa->nim ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-slate-700">
+                                            <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                                {{ \App\Models\Bimbingans::peranLabel($item->peran) }}
+                                            </span>
                                         </td>
                                         <td class="px-4 py-3 text-slate-700">
                                             {{ $item->dosen->user->name ?? '-' }}
