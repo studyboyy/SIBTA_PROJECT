@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('Mahasiswa123'), // password
+            'password' => static::$password ??= Hash::make('Mahasiswa123!'),
             'remember_token' => Str::random(10),
         ];
     }
@@ -46,6 +46,26 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'password' => Hash::make($password),
         ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('admin'));
+    }
+
+    public function dosen(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('dosen'));
+    }
+
+    public function mahasiswa(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('mahasiswa'));
+    }
+
+    public function kaprodi(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('kaprodi'));
     }
 
     /**

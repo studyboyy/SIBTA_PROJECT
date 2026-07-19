@@ -51,6 +51,34 @@ test('pengajuan pembimbing uses the singular table from the migration', function
     ]);
 });
 
+test('a mahasiswa can have first and second supervisors', function () {
+    $firstDosen = makeDosen('Dosen Pembimbing Satu', '990011');
+    $secondDosen = makeDosen('Dosen Pembimbing Dua', '990012');
+    $mahasiswaUser = User::factory()->create();
+    $mahasiswa = Mahasiswas::query()->create([
+        'user_id' => $mahasiswaUser->id,
+        'nim' => '2300000011',
+        'angkatan' => '2023',
+        'prodi' => 'Teknik Informatika',
+        'status_ta' => 'Pending',
+    ]);
+
+    Bimbingans::setSupervisor($mahasiswa->id, $firstDosen->id, Bimbingans::PERAN_PEMBIMBING_1);
+    Bimbingans::setSupervisor($mahasiswa->id, $secondDosen->id, Bimbingans::PERAN_PEMBIMBING_2);
+
+    expect($mahasiswa->bimbingans()->count())->toBe(2);
+    $this->assertDatabaseHas('bimbingans', [
+        'mahasiswa_id' => $mahasiswa->id,
+        'dosen_id' => $firstDosen->id,
+        'peran' => Bimbingans::PERAN_PEMBIMBING_1,
+    ]);
+    $this->assertDatabaseHas('bimbingans', [
+        'mahasiswa_id' => $mahasiswa->id,
+        'dosen_id' => $secondDosen->id,
+        'peran' => Bimbingans::PERAN_PEMBIMBING_2,
+    ]);
+});
+
 test('kaprodi approval replaces the active supervisor assignment', function () {
     $kaprodi = User::factory()->create([
         'name' => 'Kaprodi TI',

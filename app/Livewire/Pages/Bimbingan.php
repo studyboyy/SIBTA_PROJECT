@@ -16,7 +16,19 @@ class Bimbingan extends Component
     #[Title('Kelola Bimbingan')]
     public array $mahasiswa_ids = [];
 
+    public array $dosen_ids = [];
+
     public $dosen_id = '';
+
+    public function updatedDosenIds($value): void
+    {
+        $this->dosen_ids = array_values(array_unique(array_map('intval', (array) $value)));
+
+        if (count($this->dosen_ids) > 2) {
+            $this->dosen_ids = array_slice($this->dosen_ids, 0, 2);
+            session()->flash('error', 'Maksimal 2 dosen pembimbing dapat dipilih.');
+        }
+    }
 
     public string $peran = Bimbingans::PERAN_PEMBIMBING_1;
 
@@ -44,70 +56,35 @@ class Bimbingan extends Component
 
     public function simpan(): void
     {
+        if ($this->dosen_id !== '') {
+            $this->dosen_ids = [(int) $this->dosen_id];
+        }
+
         $this->validate([
             'mahasiswa_ids' => 'required|array|min:1',
             'mahasiswa_ids.*' => 'exists:mahasiswas,id',
-            'dosen_id' => 'required|exists:dosens,id',
-            'peran' => 'required|in:'.implode(',', array_keys(Bimbingans::peranOptions())),
+            'dosen_ids' => 'required|array|min:1|max:2',
+            'dosen_ids.*' => 'exists:dosens,id',
         ]);
-
-        $dosen = Dosens::query()
-            ->withCount('bimbingans')
-            ->findOrFail((int) $this->dosen_id);
-
-        $selectedCount = Bimbingans::query()
-            ->whereIn('mahasiswa_id', $this->mahasiswa_ids)
-            ->where('dosen_id', $this->dosen_id)
-            ->count();
-        $selectedCount = count($this->mahasiswa_ids) - $selectedCount;
-        $remainingQuota = max((int) $dosen->kuota_bimbingan - (int) $dosen->bimbingans_count, 0);
-
-        if ($remainingQuota <= 0) {
-            session()->flash('error', 'Kuota dosen pembimbing ini sudah penuh.');
-
-            return;
-        }
-
-        if ($selectedCount > $remainingQuota) {
-            session()->flash('error', 'Jumlah mahasiswa dipilih melebihi sisa kuota dosen. Sisa kuota saat ini: '.$remainingQuota.'.');
-
-            return;
-        }
 
         $skipped = 0;
         $added = 0;
 
         foreach ($this->mahasiswa_ids as $mhsId) {
-            $sameDosenExists = Bimbingans::query()
-                ->where('mahasiswa_id', $mhsId)
-                ->where('dosen_id', $this->dosen_id)
-                ->exists();
-
-            if ($sameDosenExists) {
-                $skipped++;
-
-                continue;
-            }
-
-            if ($this->peran === Bimbingans::PERAN_PEMBIMBING_2) {
-                $hasPrimary = Bimbingans::query()
-                    ->where('mahasiswa_id', $mhsId)
-                    ->where('peran', Bimbingans::PERAN_PEMBIMBING_1)
-                    ->exists();
-
-                if (! $hasPrimary) {
+            foreach (array_values($this->dosen_ids) as $index => $dosenId) {
+                $role = $index === 0 ? Bimbingans::PERAN_PEMBIMBING_1 : Bimbingans::PERAN_PEMBIMBING_2;
+                $hasPrimary = $role === Bimbingans::PERAN_PEMBIMBING_1 || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('peran', Bimbingans::PERAN_PEMBIMBING_1)->exists();
+                if (! $hasPrimary || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('dosen_id', $dosenId)->exists()) {
                     $skipped++;
 
                     continue;
                 }
+                Bimbingans::setSupervisor((int) $mhsId, (int) $dosenId, $role);
+                $added++;
             }
-
-            Bimbingans::setSupervisor((int) $mhsId, (int) $this->dosen_id, $this->peran);
-
-            $added++;
         }
 
-        $this->reset(['mahasiswa_ids', 'dosen_id']);
+        $this->reset(['mahasiswa_ids', 'dosen_ids']);
 
         if ($added > 0 && $skipped === 0) {
             session()->flash('success', $added.' penugasan berhasil disimpan.');
@@ -167,22 +144,37 @@ class Bimbingan extends Component
 
     public function render()
     {
-        $mahasiswas = Mahasiswas::with('user')
+        if (count($this->dosen_ids) > 2) {
+            $this->dosen_ids = array_slice($this->dosen_ids, 0, 2);
+        }
+
+        $mahasiswas = Mahasiswas::with(['user', 'bimbingans.dosen.user'])
             ->when($this->peran === Bimbingans::PERAN_PEMBIMBING_2, function ($query) {
-                $query->whereHas('bimbingans', fn ($subQuery) => $subQuery->where('peran', Bimbingans::PERAN_PEMBIMBING_1));
+                $query->whereHas('bimbingans', fn ($subQuery) => $subQuery->where('peran', Bimbingans::PERAN_PEMBIMBING_1))
+                    ->whereDoesntHave('bimbingans', fn ($subQuery) => $subQuery->where('peran', Bimbingans::PERAN_PEMBIMBING_2));
+            })
+            ->when($this->peran === Bimbingans::PERAN_PEMBIMBING_1, function ($query) {
+                $query->whereDoesntHave('bimbingans', fn ($subQuery) => $subQuery->where('peran', Bimbingans::PERAN_PEMBIMBING_2));
             })
             ->get();
 
-        $bimbingans = Bimbingans::with(['mahasiswa.user', 'dosen.user'])
+        $penugasans = Mahasiswas::query()
+            ->with([
+                'user',
+                'bimbingans' => fn ($query) => $query
+                    ->with('dosen.user')
+                    ->orderByRaw("CASE peran WHEN 'pembimbing_1' THEN 1 WHEN 'pembimbing_2' THEN 2 ELSE 3 END"),
+            ])
+            ->whereHas('bimbingans')
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
-                    $subQuery->whereHas('mahasiswa.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
-                        ->orWhereHas('mahasiswa', fn ($q) => $q->where('nim', 'like', '%'.$this->search.'%'))
-                        ->orWhereHas('dosen.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
+                    $subQuery->whereHas('user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+                        ->orWhere('nim', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('bimbingans.dosen.user', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'));
                 });
             })
-            ->orderByRaw("CASE peran WHEN 'pembimbing_1' THEN 1 WHEN 'pembimbing_2' THEN 2 ELSE 3 END")
-            ->latest()
+            ->withMax('bimbingans', 'created_at')
+            ->orderByDesc('bimbingans_max_created_at')
             ->paginate($this->perPage);
 
         $dosens = Dosens::query()
@@ -207,7 +199,7 @@ class Bimbingan extends Component
             });
 
         return view('livewire.pages.bimbingan', [
-            'bimbingans' => $bimbingans,
+            'penugasans' => $penugasans,
             'mahasiswas' => $mahasiswas,
             'dosens' => $dosens,
             'peranOptions' => Bimbingans::peranOptions(),
