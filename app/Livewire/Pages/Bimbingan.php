@@ -72,9 +72,19 @@ class Bimbingan extends Component
 
         foreach ($this->mahasiswa_ids as $mhsId) {
             foreach (array_values($this->dosen_ids) as $index => $dosenId) {
-                $role = $index === 0 ? Bimbingans::PERAN_PEMBIMBING_1 : Bimbingans::PERAN_PEMBIMBING_2;
-                $hasPrimary = $role === Bimbingans::PERAN_PEMBIMBING_1 || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('peran', Bimbingans::PERAN_PEMBIMBING_1)->exists();
-                if (! $hasPrimary || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('dosen_id', $dosenId)->exists()) {
+                // The form selects a role explicitly. Previously the first
+                // selected lecturer was always treated as pembimbing_1, so
+                // adding pembimbing_2 replaced the existing primary slot.
+                $role = count($this->dosen_ids) > 1
+                    ? ($index === 0 ? Bimbingans::PERAN_PEMBIMBING_1 : Bimbingans::PERAN_PEMBIMBING_2)
+                    : $this->peran;
+                $hasPrimary = $role === Bimbingans::PERAN_PEMBIMBING_1
+                    || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('peran', Bimbingans::PERAN_PEMBIMBING_1)->exists();
+                $existingRole = Bimbingans::query()
+                    ->where('mahasiswa_id', $mhsId)
+                    ->where('peran', $role)
+                    ->first();
+                if (! $hasPrimary || ($existingRole && (int) $existingRole->dosen_id === (int) $dosenId) || Bimbingans::query()->where('mahasiswa_id', $mhsId)->where('dosen_id', $dosenId)->exists()) {
                     $skipped++;
 
                     continue;
